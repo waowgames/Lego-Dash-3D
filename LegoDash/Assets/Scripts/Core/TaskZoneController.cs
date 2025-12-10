@@ -17,6 +17,10 @@ public class TaskZoneController : MonoBehaviour
     [SerializeField]
     private Transform _stackAnchor;
 
+    [Tooltip("Optional explicit slot positions used to lay out task bricks (e.g. horizontally).")]
+    [SerializeField]
+    private List<Transform> _slotPositions = new();
+
     [Tooltip("Seconds it takes for a brick to travel into the task zone.")]
     [SerializeField]
     private float _moveDuration = 0.35f;
@@ -24,6 +28,8 @@ public class TaskZoneController : MonoBehaviour
     [Tooltip("Vertical spacing between stacked bricks in the task zone.")]
     [SerializeField]
     private float _brickHeightSpacing = 0.25f;
+
+    private readonly List<Brick> _activeBricks = new();
 
     public BrickColor CurrentColor { get; private set; }
     public int RequiredCount { get; private set; }
@@ -36,6 +42,8 @@ public class TaskZoneController : MonoBehaviour
     /// </summary>
     public void InitTask(BrickColor color, int requiredCount)
     {
+        ClearStoredBricks();
+
         CurrentColor = color;
         RequiredCount = requiredCount;
         CurrentCount = 0;
@@ -107,11 +115,10 @@ public class TaskZoneController : MonoBehaviour
 
                 var targetPosition = GetTargetPosition(targetIndex);
                 yield return StartCoroutine(MoveBrick(brickTransform, targetPosition));
-
-                Destroy(brick.Instance);
             }
 
             CurrentCount++;
+            _activeBricks.Add(brick);
             UpdateTaskText();
 
             if (!completionTriggered && IsCompleted())
@@ -145,7 +152,25 @@ public class TaskZoneController : MonoBehaviour
 
     private Vector3 GetTargetPosition(int index)
     {
+        if (_slotPositions.Count > 0 && index < _slotPositions.Count)
+        {
+            return _slotPositions[index].position;
+        }
+
         var anchor = _stackAnchor == null ? transform : _stackAnchor;
         return anchor.position + Vector3.up * (_brickHeightSpacing * index);
+    }
+
+    private void ClearStoredBricks()
+    {
+        foreach (var brick in _activeBricks)
+        {
+            if (brick.Instance != null)
+            {
+                Destroy(brick.Instance);
+            }
+        }
+
+        _activeBricks.Clear();
     }
 }
