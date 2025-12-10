@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,10 +23,21 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     [SerializeField]
     private List<BrickPrefabMapping> _brickPrefabs = new();
 
+    [Header("Level")]
+    [Tooltip("LevelMissionManager yoksa başlangıçta yüklenir.")]
+    [SerializeField]
+    private LevelConfig _initialLevelConfig;
+
+    [SerializeField]
+    private bool _startLevelOnStart = true;
+
     private readonly Queue<TaskData> _taskQueue = new();
     private Dictionary<BrickColor, GameObject> _prefabLookup;
     private bool _levelFailed;
     private bool _levelCompleted;
+    private bool _levelStarted;
+    private LevelConfig _activeLevelConfig;
+    private int _activeLevelIndex;
 
     protected override void Awake()
     {
@@ -36,14 +48,14 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         {
             _taskZone.OnTaskCompleted += HandleTaskCompleted;
         }
-        
-      
     }
 
     private void Start()
     {
-        SetupExampleLevel();
-        BeginNextTask();
+        if (!_levelStarted && _startLevelOnStart && LevelMissionManager.Instance == null)
+        {
+            StartLevel(_initialLevelConfig, 0);
+        }
     }
 
     private void FillTheStands()
@@ -51,46 +63,57 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         _stands = FindObjectsByType<StandController>(FindObjectsSortMode.None).ToList();
     }
 
-    /// <summary>
-    /// Example level setup pulled from the provided specification.
-    /// </summary>
-    private void SetupExampleLevel()
+    public void StartLevel(LevelConfig config, int levelIndex)
     {
-        if (_stands.Count < 2)
+        _levelStarted = true;
+        _levelFailed = false;
+        _levelCompleted = false;
+        _activeLevelConfig = config;
+        _activeLevelIndex = levelIndex;
+
+        _taskQueue.Clear();
+        _temporaryZone?.ResetZone();
+
+        if (config == null)
         {
-            Debug.LogWarning("Not enough stand references configured for the example level.");
+            Debug.LogWarning("LevelConfig atanmadı; örnek kurulum kullanılmayacak.");
             return;
         }
 
-        // Level 1 setup
-        var standAColors = new[]
+        if (_temporaryZone != null)
         {
-            BrickColor.Yellow, BrickColor.Yellow, BrickColor.Yellow,
-             
-        };
+            _temporaryZone.SetCapacity(config.StorageCapacity);
+        }
 
-        var standBColors = new[]
+        BuildStandsFromConfig(config);
+        EnqueueTasksFromConfig(config);
+        BeginNextTask();
+    }
+
+    private void BuildStandsFromConfig(LevelConfig config)
+    {
+        FillTheStands();
+        var standLayouts = config.Stands;
+
+        for (int i = 0; i < _stands.Count; i++)
         {
-            BrickColor.Red, BrickColor.Red,
-            BrickColor.Red,
-            BrickColor.Yellow, BrickColor.Yellow
-        };
+            var layout = i < standLayouts.Count ? standLayouts[i] : null;
+            var bricks = layout != null ? layout.Bricks : Array.Empty<BrickColor>();
+            _stands[i].BuildStand(bricks, _prefabLookup);
+        }
 
-        var standCColors = new[]
+        if (_stands.Count < standLayouts.Count)
         {
-            BrickColor.Blue, BrickColor.Blue,
-            BrickColor.Blue,
-            BrickColor.Blue, BrickColor.Blue
-        };
-        
-        _stands[0].BuildStand(standAColors, _prefabLookup);
-        _stands[1].BuildStand(standBColors, _prefabLookup);
-        _stands[2].BuildStand(standCColors, _prefabLookup);
+            Debug.LogWarning("Sahnedeki stant sayısı LevelConfig içindeki tanımdan az.");
+        }
+    }
 
-        _taskQueue.Clear();
-        _taskQueue.Enqueue(new TaskData(BrickColor.Blue, 9));
-        _taskQueue.Enqueue(new TaskData(BrickColor.Red, 5));
-        _taskQueue.Enqueue(new TaskData(BrickColor.Yellow, 3));
+    private void EnqueueTasksFromConfig(LevelConfig config)
+    {
+        foreach (var task in config.Tasks)
+        {
+            _taskQueue.Enqueue(new TaskData(task.Color, task.RequiredCount));
+        }
     }
 
     /// <summary>
@@ -103,7 +126,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             return;
         }
 
-        if (stand == null)
+        if (stand == null || _taskZone == null)
         {
             return;
         }
@@ -132,11 +155,16 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
     private void SendToTaskZone(List<Brick> bricks)
     {
-        _taskZone.AddBricks(bricks);
+        _taskZone?.AddBricks(bricks);
     }
 
     private void SendToTemporaryZone(List<Brick> bricks)
     {
+        if (_temporaryZone == null)
+        {
+            return;
+        }
+
         if (!_temporaryZone.CanAccept(bricks.Count))
         {
             FailLevel();
@@ -149,8 +177,6 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             FailLevel();
             return;
         }
-
-        // Bricks are stored visually in the temporary zone, so keep their instances.
     }
 
     private void HandleTaskCompleted()
@@ -160,7 +186,6 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
     private IEnumerator BeginNextTaskRoutine()
     {
-        // TODO: Completion animation
         yield return new WaitForSeconds(0.25f);
         BeginNextTask();
     }
@@ -171,6 +196,13 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         {
             _levelCompleted = true;
             Debug.Log("All tasks completed! Level clear.");
+            LevelManager.Instance?.CompleteLevel(true);
+            return;
+        }
+
+        if (_taskZone == null)
+        {
+            Debug.LogWarning("TaskZoneController bulunamadı.");
             return;
         }
 
@@ -184,6 +216,11 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     /// </summary>
     private void MoveTemporaryMatches()
     {
+        if (_temporaryZone == null || _taskZone == null)
+        {
+            return;
+        }
+
         var matchingBricks = _temporaryZone.ExtractBricksOfColor(_taskZone.CurrentColor);
         if (matchingBricks.Count == 0)
         {
@@ -191,17 +228,6 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         }
 
         SendToTaskZone(matchingBricks);
-    }
-
-    private void DestroyBricks(IEnumerable<Brick> bricks)
-    {
-        foreach (var brick in bricks)
-        {
-            if (brick.Instance != null)
-            {
-                Destroy(brick.Instance);
-            }
-        }
     }
 
     private void FailLevel()
@@ -213,7 +239,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
         _levelFailed = true;
         Debug.LogError("Temporary Zone overflow. Level failed.");
-        // TODO: Show fail UI and reset level.
+        LevelManager.Instance?.FailLevel();
     }
 }
 
