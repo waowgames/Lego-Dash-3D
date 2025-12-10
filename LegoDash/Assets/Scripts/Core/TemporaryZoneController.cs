@@ -16,6 +16,10 @@ public class TemporaryZoneController : MonoBehaviour
     [SerializeField]
     private Transform _storageAnchor;
 
+    [Tooltip("Optional explicit slot positions used to lay out stored bricks (e.g. horizontally).")]
+    [SerializeField]
+    private List<Transform> _slotPositions = new();
+
     [Tooltip("Seconds it takes for a brick to travel into the temporary zone.")]
     [SerializeField]
     private float _moveDuration = 0.35f;
@@ -34,7 +38,7 @@ public class TemporaryZoneController : MonoBehaviour
     /// </summary>
     public bool CanAccept(int amount)
     {
-        return CurrentCount + amount <= _maxCapacity;
+        return CurrentCount + amount <= GetCapacityLimit();
     }
 
     public bool AddBricks(List<Brick> bricks)
@@ -96,7 +100,22 @@ public class TemporaryZoneController : MonoBehaviour
 
     private Vector3 GetTargetPosition(int index)
     {
+        if (_slotPositions.Count > 0 && index < _slotPositions.Count)
+        {
+            return _slotPositions[index].position;
+        }
+
         var anchor = _storageAnchor == null ? transform : _storageAnchor;
         return anchor.position + Vector3.up * (_brickHeightSpacing * index);
+    }
+
+    private int GetCapacityLimit()
+    {
+        if (_slotPositions.Count > 0)
+        {
+            return Mathf.Min(_maxCapacity, _slotPositions.Count);
+        }
+
+        return _maxCapacity;
     }
 }
