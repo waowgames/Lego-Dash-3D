@@ -56,20 +56,27 @@ public class GameManager : MonoBehaviour
         // Level 1 setup
         var standAColors = new[]
         {
-            BrickColor.Blue, BrickColor.Blue, BrickColor.Blue,
-            BrickColor.Red, BrickColor.Red, BrickColor.Red,
-            BrickColor.Purple, BrickColor.Purple, BrickColor.Purple
+            BrickColor.Yellow, BrickColor.Yellow, BrickColor.Yellow,
+             
         };
 
         var standBColors = new[]
         {
-            BrickColor.Blue, BrickColor.Blue,
+            BrickColor.Red, BrickColor.Red,
             BrickColor.Red,
             BrickColor.Yellow, BrickColor.Yellow
         };
 
+        var standCColors = new[]
+        {
+            BrickColor.Blue, BrickColor.Blue,
+            BrickColor.Blue,
+            BrickColor.Blue, BrickColor.Blue
+        };
+        
         _stands[0].BuildStand(standAColors, _prefabLookup);
         _stands[1].BuildStand(standBColors, _prefabLookup);
+        _stands[2].BuildStand(standCColors, _prefabLookup);
 
         _taskQueue.Clear();
         _taskQueue.Enqueue(new TaskData(BrickColor.Blue, 9));

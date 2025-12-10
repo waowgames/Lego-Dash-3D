@@ -99,6 +99,7 @@ public class StandController : MonoBehaviour
 
     private void OnMouseDown()
     {
+        Debug.Log("tıklandı");
         // Relay click/tap interactions to the central game manager.
         if (_gameManager != null)
         {
