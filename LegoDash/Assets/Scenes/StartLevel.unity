@@ -182,7 +182,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StandController
   _gameManager: {fileID: 265664888}
   _brickParent: {fileID: 65273198}
-  _brickHeightSpacing: 0.5
+  _brickHeightSpacing: 0.65
 --- !u!4 &108008856
 Transform:
   m_ObjectHideFlags: 0
@@ -536,7 +536,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StandController
   _gameManager: {fileID: 265664888}
   _brickParent: {fileID: 1371321524}
-  _brickHeightSpacing: 0.5
+  _brickHeightSpacing: 0.65
 --- !u!4 &423601841
 Transform:
   m_ObjectHideFlags: 0
@@ -587,7 +587,7 @@ GameObject:
   m_Layer: 0
   m_Name: Task Zone
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -604,6 +604,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TaskZoneController
   _taskText: {fileID: 0}
+  _stackAnchor: {fileID: 0}
+  _moveDuration: 0.35
+  _brickHeightSpacing: 0.25
 --- !u!4 &614341022
 Transform:
   m_ObjectHideFlags: 0
@@ -613,7 +616,7 @@ Transform:
   m_GameObject: {fileID: 614341020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -1.42}
+  m_LocalPosition: {x: 0, y: 0, z: -2.93}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -651,7 +654,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StandController
   _gameManager: {fileID: 265664888}
   _brickParent: {fileID: 1303863788}
-  _brickHeightSpacing: 0.5
+  _brickHeightSpacing: 0.65
 --- !u!4 &691670321
 Transform:
   m_ObjectHideFlags: 0
@@ -702,7 +705,7 @@ GameObject:
   m_Layer: 0
   m_Name: Temproray Zone
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 1206586993520771344, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -719,6 +722,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TemporaryZoneController
   _maxCapacity: 7
+  _storageAnchor: {fileID: 0}
+  _moveDuration: 0.35
+  _brickHeightSpacing: 0.25
 --- !u!4 &909538730
 Transform:
   m_ObjectHideFlags: 0
