@@ -9,6 +9,10 @@ public class StandController : MonoBehaviour
     [SerializeField]
     private Transform _brickParent;
 
+    [Tooltip("Vertical spacing applied between bricks when building the stand.")]
+    [SerializeField]
+    private float _brickHeightSpacing = 0.25f;
+
     private readonly List<Brick> _bricks = new();
 
     /// <summary>
@@ -28,6 +32,7 @@ public class StandController : MonoBehaviour
             }
 
             _bricks.Add(new Brick(color, instance));
+            PositionBrick(instance.transform, _bricks.Count - 1);
         }
     }
 
@@ -86,4 +91,18 @@ public class StandController : MonoBehaviour
     }
 
     public int BrickCount => _bricks.Count;
+
+    /// <summary>
+    /// Places a brick at the appropriate height based on its index in the stack.
+    /// </summary>
+    private void PositionBrick(Transform brickTransform, int index)
+    {
+        if (brickTransform == null)
+        {
+            return;
+        }
+
+        // Lower indices are closer to the base, last index represents the top-most brick.
+        brickTransform.localPosition = Vector3.up * (_brickHeightSpacing * index);
+    }
 }
