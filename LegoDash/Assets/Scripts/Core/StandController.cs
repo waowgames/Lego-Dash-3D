@@ -6,11 +6,7 @@ using UnityEngine;
 /// </summary>
 public class StandController : MonoBehaviour
 {
-    [Header("Input")]
-    [Tooltip("Game manager that will receive tap events from this stand.")]
-    [SerializeField]
-    private GameManager _gameManager;
-
+     
     [SerializeField]
     private Transform _brickParent;
 
@@ -101,9 +97,9 @@ public class StandController : MonoBehaviour
     {
         Debug.Log("tıklandı");
         // Relay click/tap interactions to the central game manager.
-        if (_gameManager != null)
+        if (GameManager.Instance != null)
         {
-            _gameManager.HandleStandTapped(this);
+            GameManager.Instance.HandleStandTapped(this);
         }
     }
 

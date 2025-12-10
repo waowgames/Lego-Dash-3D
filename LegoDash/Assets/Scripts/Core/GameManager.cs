@@ -6,7 +6,7 @@ using UnityEngine;
 /// <summary>
 /// Coordinates stands, task zone, temporary storage, and level win/fail flow.
 /// </summary>
-public class GameManager : MonoBehaviour
+public class GameManager : SingletonMonoBehaviour<GameManager>
 {
     [Header("Scene References")]
     [SerializeField]
@@ -27,19 +27,28 @@ public class GameManager : MonoBehaviour
     private bool _levelFailed;
     private bool _levelCompleted;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+        FillTheStands();
         _prefabLookup = _brickPrefabs.ToDictionary(mapping => mapping.Color, mapping => mapping.Prefab);
         if (_taskZone != null)
         {
             _taskZone.OnTaskCompleted += HandleTaskCompleted;
         }
+        
+      
     }
 
     private void Start()
     {
         SetupExampleLevel();
         BeginNextTask();
+    }
+
+    private void FillTheStands()
+    {
+        _stands = FindObjectsByType<StandController>(FindObjectsSortMode.None).ToList();
     }
 
     /// <summary>
