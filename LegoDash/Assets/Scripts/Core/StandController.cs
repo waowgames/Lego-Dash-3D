@@ -6,6 +6,11 @@ using UnityEngine;
 /// </summary>
 public class StandController : MonoBehaviour
 {
+    [Header("Input")]
+    [Tooltip("Game manager that will receive tap events from this stand.")]
+    [SerializeField]
+    private GameManager _gameManager;
+
     [SerializeField]
     private Transform _brickParent;
 
@@ -91,6 +96,15 @@ public class StandController : MonoBehaviour
     }
 
     public int BrickCount => _bricks.Count;
+
+    private void OnMouseDown()
+    {
+        // Relay click/tap interactions to the central game manager.
+        if (_gameManager != null)
+        {
+            _gameManager.HandleStandTapped(this);
+        }
+    }
 
     /// <summary>
     /// Places a brick at the appropriate height based on its index in the stack.
