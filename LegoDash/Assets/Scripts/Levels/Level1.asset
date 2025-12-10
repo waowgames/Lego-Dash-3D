@@ -13,7 +13,19 @@ MonoBehaviour:
   m_Name: Level1
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
   levelName: Level
-  tasks: []
-  stands: []
-  timeLimitSeconds: 0
-  storageCapacity: 7
+  tasks:
+  - color: 0
+    requiredCount: 3
+  - color: 1
+    requiredCount: 6
+  - color: 2
+    requiredCount: 6
+  stands:
+  - standId: Stand
+    bricks: 000000000000000000000000000000000100000001000000020000000200000002000000
+  - standId: Stand
+    bricks: 0100000001000000010000000200000002000000
+  - standId: Stand
+    bricks: 010000000100000000000000020000000200000002000000
+  timeLimitSeconds: 200
+  storageCapacity: 9

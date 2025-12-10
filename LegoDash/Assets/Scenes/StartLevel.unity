@@ -410,6 +410,8 @@ MonoBehaviour:
     Prefab: {fileID: 4746216671055761064, guid: 45e9472cb034d61458bd2ab3af09ba1c, type: 3}
   - Color: 3
     Prefab: {fileID: 4746216671055761064, guid: 4562e1732148a7b4e9f41cd65fa309d6, type: 3}
+  _initialLevelConfig: {fileID: 11400000, guid: 27d20ad96aa731646be1cb00305d8b6b, type: 2}
+  _startLevelOnStart: 1
 --- !u!4 &265664889
 Transform:
   m_ObjectHideFlags: 0
@@ -1625,6 +1627,14 @@ PrefabInstance:
       propertyPath: fruitSpawner
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: levels.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[0]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 27d20ad96aa731646be1cb00305d8b6b, type: 2}
     - target: {fileID: 6765790747958616940, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: timeAddedParticles
       value: 
