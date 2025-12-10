@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -55,12 +54,30 @@ public class TemporaryZoneController : MonoBehaviour
     }
 
     /// <summary>
-    /// Extracts all bricks matching the requested color from storage.
+    /// Extracts bricks matching the requested color from storage.
     /// </summary>
-    public List<Brick> ExtractBricksOfColor(BrickColor color)
+    public List<Brick> ExtractBricksOfColor(BrickColor color, int maxCount = int.MaxValue)
     {
-        var extracted = _storedBricks.Where(brick => brick.Color == color).ToList();
-        _storedBricks.RemoveAll(brick => brick.Color == color);
+        if (maxCount <= 0)
+        {
+            return new List<Brick>();
+        }
+
+        var extracted = new List<Brick>();
+
+        for (int i = 0; i < _storedBricks.Count && extracted.Count < maxCount; i++)
+        {
+            var brick = _storedBricks[i];
+            if (brick.Color != color)
+            {
+                continue;
+            }
+
+            extracted.Add(brick);
+            _storedBricks.RemoveAt(i);
+            i--;
+        }
+
         return extracted;
     }
 

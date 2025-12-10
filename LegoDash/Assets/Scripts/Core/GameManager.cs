@@ -145,7 +145,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
         if (topColor.Value == _taskZone.CurrentColor)
         {
-            SendToTaskZone(brickGroup);
+            SendBricksToTaskWithOverflowHandling(brickGroup);
         }
         else
         {
@@ -156,6 +156,40 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     private void SendToTaskZone(List<Brick> bricks)
     {
         _taskZone?.AddBricks(bricks);
+    }
+
+    private void SendBricksToTaskWithOverflowHandling(List<Brick> bricks)
+    {
+        if (_taskZone == null)
+        {
+            return;
+        }
+
+        int remainingNeed = Mathf.Max(0, _taskZone.RequiredCount - _taskZone.CurrentCount);
+
+        if (remainingNeed == 0)
+        {
+            SendToTemporaryZone(bricks);
+            return;
+        }
+
+        if (bricks.Count <= remainingNeed)
+        {
+            SendToTaskZone(bricks);
+            return;
+        }
+
+        var bricksForTask = bricks.Take(remainingNeed).ToList();
+        var overflow = bricks.Skip(remainingNeed).ToList();
+
+        if (_temporaryZone != null && !_temporaryZone.CanAccept(overflow.Count))
+        {
+            FailLevel();
+            return;
+        }
+
+        SendToTaskZone(bricksForTask);
+        SendToTemporaryZone(overflow);
     }
 
     private void SendToTemporaryZone(List<Brick> bricks)
@@ -221,7 +255,13 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             return;
         }
 
-        var matchingBricks = _temporaryZone.ExtractBricksOfColor(_taskZone.CurrentColor);
+        int remainingNeed = Mathf.Max(0, _taskZone.RequiredCount - _taskZone.CurrentCount);
+        if (remainingNeed == 0)
+        {
+            return;
+        }
+
+        var matchingBricks = _temporaryZone.ExtractBricksOfColor(_taskZone.CurrentColor, remainingNeed);
         if (matchingBricks.Count == 0)
         {
             return;
