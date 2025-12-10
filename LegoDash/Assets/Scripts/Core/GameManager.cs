@@ -116,9 +116,7 @@ public class GameManager : MonoBehaviour
 
     private void SendToTaskZone(List<Brick> bricks)
     {
-        // TODO: Add tween/animation when moving to task zone.
-        _taskZone.AddBricks(bricks.Count);
-        DestroyBricks(bricks);
+        _taskZone.AddBricks(bricks);
     }
 
     private void SendToTemporaryZone(List<Brick> bricks)
