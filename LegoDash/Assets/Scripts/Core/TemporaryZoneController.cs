@@ -64,6 +64,24 @@ public class TemporaryZoneController : MonoBehaviour
         return extracted;
     }
 
+    public void ResetZone()
+    {
+        foreach (var brick in _storedBricks)
+        {
+            if (brick.Instance != null)
+            {
+                Destroy(brick.Instance);
+            }
+        }
+
+        _storedBricks.Clear();
+    }
+
+    public void SetCapacity(int capacity)
+    {
+        _maxCapacity = Mathf.Max(1, capacity);
+    }
+
     private IEnumerator MoveBricksToStorage(List<Brick> bricks, int startIndex)
     {
         // Move the incoming bricks to their stacked positions, preserving arrival order.
