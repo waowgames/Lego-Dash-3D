@@ -28,4 +28,4 @@ MonoBehaviour:
   - standId: Stand
     bricks: 010000000100000000000000020000000200000002000000
   timeLimitSeconds: 200
-  storageCapacity: 9
+  storageCapacity: 14
