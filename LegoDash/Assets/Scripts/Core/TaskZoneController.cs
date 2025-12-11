@@ -26,6 +26,10 @@ public class TaskZoneController : MonoBehaviour
     [SerializeField]
     private float _moveDuration = 0.35f;
 
+    [Tooltip("Delay between starting each brick's movement animation.")]
+    [SerializeField]
+    private float _moveStaggerDelay = 0.05f;
+
     [Tooltip("Jump height used while bricks travel into the zone.")]
     [SerializeField]
     private float _jumpPower = 0.75f;
@@ -116,6 +120,19 @@ public class TaskZoneController : MonoBehaviour
         int startIndex = CurrentCount;
         bool completionTriggered = IsCompleted();
 
+        void OnBrickArrived(Brick arrivedBrick)
+        {
+            CurrentCount++;
+            _activeBricks.Add(arrivedBrick);
+            UpdateTaskText();
+
+            if (!completionTriggered && IsCompleted())
+            {
+                completionTriggered = true;
+                CompleteTask();
+            }
+        }
+
         bricks.Reverse();
         for (int i = 0; i < bricks.Count; i++)
         {
@@ -128,25 +145,26 @@ public class TaskZoneController : MonoBehaviour
                 brickTransform.SetParent(_stackAnchor == null ? transform : _stackAnchor);
 
                 var targetPosition = GetTargetPosition(targetIndex);
-                yield return StartCoroutine(MoveBrick(brickTransform, targetPosition));
+                StartCoroutine(MoveBrick(brickTransform, targetPosition, () => OnBrickArrived(brick)));
             }
 
-            CurrentCount++;
-            _activeBricks.Add(brick);
-            UpdateTaskText();
-
-            if (!completionTriggered && IsCompleted())
+            if (brick.Instance == null)
             {
-                completionTriggered = true;
-                CompleteTask();
+                OnBrickArrived(brick);
+            }
+
+            if (_moveStaggerDelay > 0f)
+            {
+                yield return new WaitForSeconds(_moveStaggerDelay);
             }
         }
     }
 
-    private IEnumerator MoveBrick(Transform brickTransform, Vector3 targetPosition)
+    private IEnumerator MoveBrick(Transform brickTransform, Vector3 targetPosition, Action onComplete)
     {
         if (brickTransform == null)
         {
+            onComplete?.Invoke();
             yield break;
         }
 
@@ -168,6 +186,8 @@ public class TaskZoneController : MonoBehaviour
 
         brickTransform.position = targetPosition;
         brickTransform.rotation = startingRotation;
+
+        onComplete?.Invoke();
     }
 
     private Vector3 GetTargetPosition(int index)
