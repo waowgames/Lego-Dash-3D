@@ -9,9 +9,7 @@ using Sirenix.OdinInspector; // << EKLENDİ: Action için
 public class LevelManager : MonoBehaviour
 {
     public static LevelManager Instance { get; private set; }
-
-    public GameObject timeAddedText;
-    public ParticleSystem timeAddedParticles;
+    public ParticleSystem confettiParticle;
     public LevelState State { get; private set; } = LevelState.Idle;
 
     public LevelConfig CurrentLevelConfig { get; private set; }
@@ -159,8 +157,8 @@ public class LevelManager : MonoBehaviour
     private IEnumerator EndLevelWithDelay(LevelEndPayload payload, float seconds, bool success)
     {
       
-        if(success)
-            timeAddedParticles.Play();
+        if(success && confettiParticle != null)
+            confettiParticle.Play();
         
         yield return new WaitForSeconds(seconds);
         Events.RaiseLevelEnded(payload);
@@ -234,14 +232,14 @@ public class LevelManager : MonoBehaviour
         DisplayedLevelNumber = Mathf.Max(1, DisplayedLevelNumber + 1);
         ProgressPrefs.SetDisplayedLevel(DisplayedLevelNumber);
     }
-
-    private IEnumerator TimeAddMovement()
-    {
-        timeAddedText.SetActive(true);
-        timeAddedText.transform.localPosition = new Vector3(-191, -705, 0);
-        timeAddedText.transform.DOLocalMove(new Vector3(-191, -600, 0), .5f);
-        timeAddedParticles.Play();
-        yield return new WaitForSeconds(.6f);
-        timeAddedText.SetActive(false);
-    }
+    //
+    // private IEnumerator TimeAddMovement()
+    // {
+    //     timeAddedText.SetActive(true);
+    //     timeAddedText.transform.localPosition = new Vector3(-191, -705, 0);
+    //     timeAddedText.transform.DOLocalMove(new Vector3(-191, -600, 0), .5f);
+    //     timeAddedParticles.Play();
+    //     yield return new WaitForSeconds(.6f);
+    //     timeAddedText.SetActive(false);
+    // }
 }
