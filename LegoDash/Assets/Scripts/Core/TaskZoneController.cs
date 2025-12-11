@@ -103,6 +103,7 @@ public class TaskZoneController : MonoBehaviour
         int startIndex = CurrentCount;
         bool completionTriggered = IsCompleted();
 
+        bricks.Reverse();
         for (int i = 0; i < bricks.Count; i++)
         {
             var brick = bricks[i];

@@ -106,6 +106,7 @@ public class TemporaryZoneController : MonoBehaviour
 
     private IEnumerator MoveBricksToStorage(List<Brick> bricks, int startIndex)
     {
+        bricks.Reverse();
         // Move the incoming bricks to their stacked positions, preserving arrival order.
         for (int i = 0; i < bricks.Count; i++)
         {
