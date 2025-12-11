@@ -617,6 +617,10 @@ MonoBehaviour:
     Prefab: {fileID: 4746216671055761064, guid: 45e9472cb034d61458bd2ab3af09ba1c, type: 3}
   - Color: 3
     Prefab: {fileID: 4746216671055761064, guid: 4562e1732148a7b4e9f41cd65fa309d6, type: 3}
+  - Color: 5
+    Prefab: {fileID: 4746216671055761064, guid: 29343560241d3bb4eb72985d41f36d76, type: 3}
+  - Color: 6
+    Prefab: {fileID: 4746216671055761064, guid: 55dfa76d4f3aa6f4aa54f0f7091f74bc, type: 3}
   _initialLevelConfig: {fileID: 11400000, guid: 27d20ad96aa731646be1cb00305d8b6b, type: 2}
   _startLevelOnStart: 1
 --- !u!4 &265664889
