@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
@@ -24,6 +25,18 @@ public class TaskZoneController : MonoBehaviour
     [Tooltip("Seconds it takes for a brick to travel into the task zone.")]
     [SerializeField]
     private float _moveDuration = 0.35f;
+
+    [Tooltip("Jump height used while bricks travel into the zone.")]
+    [SerializeField]
+    private float _jumpPower = 0.75f;
+
+    [Tooltip("How much the brick tilts while moving.")]
+    [SerializeField]
+    private float _movementTiltAngle = 45f;
+
+    [Tooltip("Easing used for the incoming brick jump animation.")]
+    [SerializeField]
+    private Ease _moveEase = Ease.OutCubic;
 
     [Tooltip("Vertical spacing between stacked bricks in the task zone.")]
     [SerializeField]
@@ -137,18 +150,24 @@ public class TaskZoneController : MonoBehaviour
             yield break;
         }
 
-        var startPosition = brickTransform.position;
-        float elapsed = 0f;
+        brickTransform.DOKill();
+        var startingRotation = brickTransform.rotation;
 
-        while (elapsed < _moveDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / _moveDuration);
-            brickTransform.position = Vector3.Lerp(startPosition, targetPosition, t);
-            yield return null;
-        }
+        var sequence = DOTween.Sequence();
+        sequence.Join(brickTransform
+            .DOJump(targetPosition, _jumpPower, 1, _moveDuration)
+            .SetEase(_moveEase));
+
+        sequence.Join(brickTransform
+            .DORotateQuaternion(startingRotation * Quaternion.Euler(-_movementTiltAngle, 0f, 0f),
+                _moveDuration * 0.45f)
+            .SetLoops(2, LoopType.Yoyo)
+            .SetEase(Ease.OutSine));
+
+        yield return sequence.WaitForCompletion();
 
         brickTransform.position = targetPosition;
+        brickTransform.rotation = startingRotation;
     }
 
     private Vector3 GetTargetPosition(int index)
