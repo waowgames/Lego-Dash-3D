@@ -24,6 +24,10 @@ public class TemporaryZoneController : MonoBehaviour
     [SerializeField]
     private float _moveDuration = 0.35f;
 
+    [Tooltip("Delay between starting each brick's movement animation.")]
+    [SerializeField]
+    private float _moveStaggerDelay = 0.05f;
+
     [Tooltip("Jump height used while bricks travel into the temporary zone.")]
     [SerializeField]
     private float _jumpPower = 0.75f;
@@ -131,7 +135,12 @@ public class TemporaryZoneController : MonoBehaviour
                 var brickTransform = brick.Instance.transform;
                 brickTransform.SetParent(_storageAnchor == null ? transform : _storageAnchor);
                 var targetPosition = GetTargetPosition(targetIndex);
-                yield return StartCoroutine(MoveBrick(brickTransform, targetPosition));
+                StartCoroutine(MoveBrick(brickTransform, targetPosition));
+            }
+
+            if (_moveStaggerDelay > 0f)
+            {
+                yield return new WaitForSeconds(_moveStaggerDelay);
             }
         }
     }
@@ -170,7 +179,12 @@ public class TemporaryZoneController : MonoBehaviour
             }
 
             var targetPosition = GetTargetPosition(i);
-            yield return StartCoroutine(MoveBrick(brick.Instance.transform, targetPosition));
+            StartCoroutine(MoveBrick(brick.Instance.transform, targetPosition));
+
+            if (_moveStaggerDelay > 0f)
+            {
+                yield return new WaitForSeconds(_moveStaggerDelay);
+            }
         }
     }
 

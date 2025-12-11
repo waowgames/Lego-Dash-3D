@@ -160,7 +160,32 @@ public class TaskZoneController : MonoBehaviour
         }
     }
 
-    private IEnumerator MoveBrick(Transform brickTransform, Vector3 targetPosition, Action onComplete)
+    public void ReflowActiveBricks()
+    {
+        StartCoroutine(ReflowBricksCoroutine());
+    }
+
+    private IEnumerator ReflowBricksCoroutine()
+    {
+        for (int i = 0; i < _activeBricks.Count; i++)
+        {
+            var brick = _activeBricks[i];
+            if (brick.Instance == null)
+            {
+                continue;
+            }
+
+            var targetPosition = GetTargetPosition(i);
+            StartCoroutine(MoveBrick(brick.Instance.transform, targetPosition));
+
+            if (_moveStaggerDelay > 0f)
+            {
+                yield return new WaitForSeconds(_moveStaggerDelay);
+            }
+        }
+    }
+
+    private IEnumerator MoveBrick(Transform brickTransform, Vector3 targetPosition, Action onComplete = null)
     {
         if (brickTransform == null)
         {
