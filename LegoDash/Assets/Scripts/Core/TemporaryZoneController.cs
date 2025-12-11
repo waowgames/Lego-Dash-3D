@@ -78,6 +78,11 @@ public class TemporaryZoneController : MonoBehaviour
             i--;
         }
 
+        if (extracted.Count > 0)
+        {
+            StartCoroutine(ReflowStoredBricks());
+        }
+
         return extracted;
     }
 
@@ -131,6 +136,21 @@ public class TemporaryZoneController : MonoBehaviour
         }
 
         brickTransform.position = targetPosition;
+    }
+
+    private IEnumerator ReflowStoredBricks()
+    {
+        for (int i = 0; i < _storedBricks.Count; i++)
+        {
+            var brick = _storedBricks[i];
+            if (brick.Instance == null)
+            {
+                continue;
+            }
+
+            var targetPosition = GetTargetPosition(i);
+            yield return StartCoroutine(MoveBrick(brick.Instance.transform, targetPosition));
+        }
     }
 
     private Vector3 GetTargetPosition(int index)
