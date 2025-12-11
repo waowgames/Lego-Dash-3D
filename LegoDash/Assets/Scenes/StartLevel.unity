@@ -828,7 +828,10 @@ MonoBehaviour:
   - {fileID: 1591312980}
   - {fileID: 1155942823}
   - {fileID: 1792175241}
-  _moveDuration: 0.35
+  _moveDuration: 0.45
+  _jumpPower: 2
+  _movementTiltAngle: 45
+  _moveEase: 9
   _brickHeightSpacing: 0
 --- !u!4 &614341022
 Transform:
@@ -1113,8 +1116,11 @@ MonoBehaviour:
   - {fileID: 1524420108}
   - {fileID: 709744864}
   - {fileID: 710189893}
-  _moveDuration: 0.35
-  _brickHeightSpacing: 0.25
+  _moveDuration: 0.45
+  _jumpPower: 2
+  _movementTiltAngle: 45
+  _moveEase: 9
+  _brickHeightSpacing: 0
 --- !u!4 &909538730
 Transform:
   m_ObjectHideFlags: 0
