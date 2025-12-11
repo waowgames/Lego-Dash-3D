@@ -46,9 +46,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec4434d4db8838640a284aa3722da277, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StandController
-  _gameManager: {fileID: 0}
   _brickParent: {fileID: 5916894352170838151}
-  _brickHeightSpacing: 0.65
+  _brickHeightSpacing: 0.3
 --- !u!65 &7050483946230687531
 BoxCollider:
   m_ObjectHideFlags: 0
