@@ -146,16 +146,17 @@ public class TemporaryZoneController : MonoBehaviour
             .DOJump(targetPosition, _jumpPower, 1, _moveDuration)
             .SetEase(_moveEase));
 
-        sequence.Join(brickTransform
-            .DORotateQuaternion(startingRotation * Quaternion.Euler(-_movementTiltAngle, 0f, 0f),
-                _moveDuration * 0.45f)
-            .SetLoops(2, LoopType.Yoyo)
-            .SetEase(Ease.OutSine));
+        sequence.Join(brickTransform.DORotate(new Vector3(0, 0, -90), _moveDuration));
+        // sequence.Join(brickTransform
+        //     .DORotateQuaternion(startingRotation * Quaternion.Euler(-_movementTiltAngle, 0f, 0f),
+        //         _moveDuration * 0.45f)
+        //     .SetLoops(2, LoopType.Yoyo)
+        //     .SetEase(Ease.OutSine));
 
         yield return sequence.WaitForCompletion();
 
         brickTransform.position = targetPosition;
-        brickTransform.rotation = startingRotation;
+      //  brickTransform.rotation = startingRotation;
     }
 
     private IEnumerator ReflowStoredBricks()
