@@ -12,12 +12,17 @@ public class LevelConfig : ScriptableObject
     [SerializeField] private List<StandLayout> stands = new();
     [SerializeField, Min(0f)] private float timeLimitSeconds = 0f;
     [SerializeField, Min(1)] private int storageCapacity = 7;
+    [Tooltip("Bu level için kullanılacak inşaat prefab'ı.")]
+    [SerializeField] private GameObject constructionPrefab;
+    [SerializeField, Min(1)] private int piecesPerTaskCompletion = 1;
 
     public string LevelName => string.IsNullOrWhiteSpace(levelName) ? name : levelName;
     public IReadOnlyList<LevelTaskDefinition> Tasks => tasks;
     public IReadOnlyList<StandLayout> Stands => stands;
     public float TimeLimitSeconds => Mathf.Max(0f, timeLimitSeconds);
     public int StorageCapacity => Mathf.Max(1, storageCapacity);
+    public GameObject ConstructionPrefab => constructionPrefab;
+    public int PiecesPerTask => Mathf.Max(1, piecesPerTaskCompletion);
 }
 
 [System.Serializable]

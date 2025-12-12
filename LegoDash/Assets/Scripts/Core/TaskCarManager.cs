@@ -28,6 +28,10 @@ public class TaskCarManager : MonoBehaviour
     [SerializeField]
     private bool _recycleCompletedCars;
 
+    [Header("Construction")]
+    [SerializeField]
+    private Construction _construction;
+
     [Header("Completed Car Exit")]
     [SerializeField]
     private float _completedTravelDistance = 5f;
@@ -45,6 +49,11 @@ public class TaskCarManager : MonoBehaviour
 
     public event Action<TaskCar> OnActiveCarChanged;
     public event Action OnAllCarsCompleted;
+
+    public void SetConstruction(Construction construction)
+    {
+        _construction = construction;
+    }
 
     public void BuildConvoyFromConfig(IReadOnlyList<LevelTaskDefinition> tasks)
     {
@@ -108,6 +117,13 @@ public class TaskCarManager : MonoBehaviour
     {
         _isAdvancing = true;
         completedCar.SetActive(false);
+
+        if (_construction != null)
+        {
+            Debug.Log("Starting construction editing aaa");
+            var collectedBricks = completedCar.CollectPlacedBricks();
+            yield return _construction.BuildWithBricks(collectedBricks);
+        }
 
         _cars.Remove(completedCar);
 

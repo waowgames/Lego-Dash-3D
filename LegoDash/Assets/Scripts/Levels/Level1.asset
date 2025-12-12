@@ -55,3 +55,5 @@ MonoBehaviour:
     bricks: 000000000000000000000000
   timeLimitSeconds: 200
   storageCapacity: 14
+  constructionPrefab: {fileID: 0}
+  piecesPerTaskCompletion: 1

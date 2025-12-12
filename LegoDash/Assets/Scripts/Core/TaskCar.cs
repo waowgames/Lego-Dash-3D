@@ -91,6 +91,13 @@ public class TaskCar : MonoBehaviour
         return Mathf.Max(0, RequiredBrickCount - CurrentBrickCount - _incomingBricksCount);
     }
 
+    public List<Brick> CollectPlacedBricks()
+    {
+        var bricks = new List<Brick>(_placedBricks);
+        _placedBricks.Clear();
+        return bricks;
+    }
+
     public void AddBricks(List<Brick> bricks)
     {
         if (bricks == null || bricks.Count == 0)
