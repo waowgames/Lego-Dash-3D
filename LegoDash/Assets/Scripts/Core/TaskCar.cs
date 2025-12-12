@@ -221,8 +221,7 @@ public class TaskCar : MonoBehaviour
 
         yield return sequence.WaitForCompletion();
 
-        brickTransform.position = targetPosition;
-        brickTransform.rotation = startingRotation;
+        brickTransform.position = targetPosition; 
 
         onComplete?.Invoke();
     }

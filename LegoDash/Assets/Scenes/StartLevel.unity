@@ -1342,7 +1342,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TaskCarManager
   _taskCarPrefab: {fileID: 1585505386001136971, guid: 7c5ece0b68aa88245b34c54ff69b02a8, type: 3}
   _convoyRoot: {fileID: 614341022}
-  _carSpacing: 12
+  _carSpacing: 7.5
   _convoyMoveDuration: 0.4
   _convoyMoveEase: 9
   _recycleCompletedCars: 0
