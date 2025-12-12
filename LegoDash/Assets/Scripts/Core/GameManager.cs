@@ -18,6 +18,10 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     [SerializeField]
     private TemporaryZoneController _temporaryZone;
 
+    [Header("Construction")]
+    [SerializeField]
+    private Construction _construction;
+
     [Header("Bricks")]
     [SerializeField]
     private List<BrickPrefabMapping> _brickPrefabs = new();
@@ -46,6 +50,12 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         {
             _taskCarManager.OnActiveCarChanged += HandleActiveCarChanged;
             _taskCarManager.OnAllCarsCompleted += HandleAllCarsCompleted;
+            _taskCarManager.SetConstruction(_construction);
+        }
+
+        if (_construction != null)
+        {
+            _construction.OnConstructionCompleted += HandleConstructionCompleted;
         }
     }
 
@@ -64,6 +74,11 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             _taskCarManager.OnActiveCarChanged -= HandleActiveCarChanged;
             _taskCarManager.OnAllCarsCompleted -= HandleAllCarsCompleted;
         }
+
+        if (_construction != null)
+        {
+            _construction.OnConstructionCompleted -= HandleConstructionCompleted;
+        }
     }
 
     private void FillTheStands()
@@ -80,6 +95,11 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         _activeLevelIndex = levelIndex;
 
         _temporaryZone?.ResetZone();
+
+        if (_construction != null)
+        {
+            _construction.InitializeForLevel(config);
+        }
 
         if (config == null)
         {
@@ -267,8 +287,29 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
     private void HandleAllCarsCompleted()
     {
+        if (_construction == null)
+        {
+            _levelCompleted = true;
+            Debug.Log("All tasks completed! Level clear.");
+            LevelManager.Instance?.CompleteLevel(true);
+            return;
+        }
+
+        if (_construction.IsComplete)
+        {
+            HandleConstructionCompleted();
+        }
+    }
+
+    private void HandleConstructionCompleted()
+    {
+        if (_levelCompleted)
+        {
+            return;
+        }
+
         _levelCompleted = true;
-        Debug.Log("All tasks completed! Level clear.");
+        Debug.Log("Construction finished! Level clear.");
         LevelManager.Instance?.CompleteLevel(true);
     }
 
