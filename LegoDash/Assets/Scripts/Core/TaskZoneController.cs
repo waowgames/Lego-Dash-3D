@@ -206,8 +206,7 @@ public class TaskZoneController : MonoBehaviour
         //         _moveDuration * 0.45f)
         //     .SetLoops(2, LoopType.Yoyo)
         //     .SetEase(Ease.OutSine));
-
-        sequence.Join(brickTransform.DORotate(Vector3.zero, _moveDuration));
+        sequence.Join(brickTransform.DORotate(new Vector3(0, 0, -90), _moveDuration)); 
 
         yield return sequence.WaitForCompletion();
 
