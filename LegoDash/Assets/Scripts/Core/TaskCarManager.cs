@@ -28,6 +28,16 @@ public class TaskCarManager : MonoBehaviour
     [SerializeField]
     private bool _recycleCompletedCars;
 
+    [Header("Completed Car Exit")]
+    [SerializeField]
+    private float _completedTravelDistance = 5f;
+
+    [SerializeField]
+    private float _completedTravelDuration = 0.5f;
+
+    [SerializeField]
+    private Ease _completedTravelEase = Ease.OutCubic;
+
     private readonly List<TaskCar> _cars = new();
     private bool _isAdvancing;
 
@@ -71,7 +81,7 @@ public class TaskCarManager : MonoBehaviour
 
     public void AddBricksToActiveCar(List<Brick> bricks)
     {
-        if (ActiveCar == null || bricks == null || bricks.Count == 0)
+        if (_isAdvancing || ActiveCar == null || bricks == null || bricks.Count == 0)
         {
             return;
         }
@@ -125,7 +135,7 @@ public class TaskCarManager : MonoBehaviour
         }
         else
         {
-            Destroy(completedCar.gameObject);
+            yield return MoveCompletedCarOut(completedCar);
         }
 
         _isAdvancing = false;
@@ -154,6 +164,25 @@ public class TaskCarManager : MonoBehaviour
         }
 
         OnActiveCarChanged?.Invoke(ActiveCar);
+    }
+
+    private IEnumerator MoveCompletedCarOut(TaskCar completedCar)
+    {
+        if (completedCar == null)
+        {
+            yield break;
+        }
+
+        var parent = _convoyRoot == null ? transform : _convoyRoot;
+        var forward = parent.right.normalized;
+        var exitTarget = completedCar.transform.localPosition + forward * _completedTravelDistance;
+
+        yield return completedCar.transform
+            .DOLocalMove(exitTarget, _completedTravelDuration)
+            .SetEase(_completedTravelEase)
+            .WaitForCompletion();
+
+        Destroy(completedCar.gameObject);
     }
 
     private void ClearExistingCars()
