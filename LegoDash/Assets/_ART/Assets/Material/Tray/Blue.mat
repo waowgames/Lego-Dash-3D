@@ -124,12 +124,12 @@ Material:
     - _OutlineTextureType: 0
     - _OutlineWidth: 1
     - _Parallax: 0.02
-    - _RampBands: 3
-    - _RampBandsSmoothing: 1
+    - _RampBands: 6
+    - _RampBandsSmoothing: 0.867
     - _RampOffset: 0
     - _RampScale: 1
-    - _RampSmoothing: 0.588
-    - _RampThreshold: 1
+    - _RampSmoothing: 0.462
+    - _RampThreshold: 0.919
     - _RampType: 0
     - _ReceiveShadowsOff: 1
     - _ReflectionMapType: 0
@@ -172,7 +172,7 @@ Material:
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _ReflectionColor: {r: 1, g: 1, b: 1, a: 1}
     - _RimColor: {r: 0.8, g: 0.8, b: 0.8, a: 0.5}
-    - _SColor: {r: 0.07613921, g: 0.19801316, b: 0.5566038, a: 1}
+    - _SColor: {r: 0.005606979, g: 0.018459821, b: 0.05660379, a: 1}
     - _SpecularColor: {r: 0.9858491, g: 0.9958379, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
