@@ -41,8 +41,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         {
             _taskCarManager.OnActiveCarChanged += HandleActiveCarChanged;
             _taskCarManager.OnAllCarsCompleted += HandleAllCarsCompleted;
-            _taskCarManager.SetConstruction(_construction);
-             Debug.Log("Game Manager has been initialized. " + _construction.gameObject.name+"falan filan");
+            _taskCarManager.SetConstruction(_construction); 
         }
 
         if (_construction != null)
@@ -91,8 +90,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
         if (_construction != null)
         {
-            _construction.InitializeForLevel(config);
-            Debug.LogWarning("construction started");
+            _construction.InitializeForLevel(config); 
         }
 
         if (config == null)

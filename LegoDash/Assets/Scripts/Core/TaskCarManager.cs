@@ -119,8 +119,7 @@ public class TaskCarManager : MonoBehaviour
         completedCar.SetActive(false);
 
         if (_construction != null)
-        {
-            Debug.Log("Starting construction editing aaa");
+        { 
             var collectedBricks = completedCar.CollectPlacedBricks();
             yield return _construction.BuildWithBricks(collectedBricks);
         }
