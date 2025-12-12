@@ -73,11 +73,11 @@ public class TaskCar : MonoBehaviour
             _activeHighlight.SetActive(isActive);
         }
 
-        if (_bodyRenderer != null)
-        {
-            var targetColor = isActive ? _baseColor : _baseColor * 0.75f;
-            _bodyRenderer.material.DOColor(targetColor, 0.2f);
-        }
+        // if (_bodyRenderer != null)
+        // {
+        //     var targetColor = isActive ? _baseColor : _baseColor * 0.75f;
+        //     _bodyRenderer.material.DOColor(targetColor, 0.2f);
+        // }
     }
 
     public bool CanAcceptBrickColor(BrickColor color)
