@@ -8,31 +8,22 @@ using UnityEngine;
 /// </summary>
 public class GameManager : SingletonMonoBehaviour<GameManager>
 {
-    [Header("Scene References")]
-    [SerializeField]
+    [Header("Scene References")] [SerializeField]
     private List<StandController> _stands = new();
 
-    [SerializeField]
-    private TaskCarManager _taskCarManager;
+    [SerializeField] private TaskCarManager _taskCarManager;
 
-    [SerializeField]
-    private TemporaryZoneController _temporaryZone;
+    [SerializeField] private TemporaryZoneController _temporaryZone;
 
-    [Header("Construction")]
-    [SerializeField]
+    [Header("Construction")] [SerializeField]
     private Construction _construction;
 
-    [Header("Bricks")]
-    [SerializeField]
-    private List<BrickPrefabMapping> _brickPrefabs = new();
+    [Header("Bricks")] [SerializeField] private List<BrickPrefabMapping> _brickPrefabs = new();
 
-    [Header("Level")]
-    [Tooltip("LevelMissionManager yoksa başlangıçta yüklenir.")]
-    [SerializeField]
+    [Header("Level")] [Tooltip("LevelMissionManager yoksa başlangıçta yüklenir.")] [SerializeField]
     private LevelConfig _initialLevelConfig;
 
-    [SerializeField]
-    private bool _startLevelOnStart = true;
+    [SerializeField] private bool _startLevelOnStart = true;
 
     private Dictionary<BrickColor, GameObject> _prefabLookup;
     private bool _levelFailed;
@@ -51,6 +42,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             _taskCarManager.OnActiveCarChanged += HandleActiveCarChanged;
             _taskCarManager.OnAllCarsCompleted += HandleAllCarsCompleted;
             _taskCarManager.SetConstruction(_construction);
+             Debug.Log("Game Manager has been initialized. " + _construction.gameObject.name+"falan filan");
         }
 
         if (_construction != null)
@@ -65,6 +57,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         {
             StartLevel(_initialLevelConfig, 0);
         }
+ 
     }
 
     private void OnDestroy()
@@ -99,6 +92,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         if (_construction != null)
         {
             _construction.InitializeForLevel(config);
+            Debug.LogWarning("construction started");
         }
 
         if (config == null)
@@ -188,7 +182,8 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         _taskCarManager?.AddBricksToActiveCar(bricks);
     }
 
-    private void SendBricksToActiveCarWithOverflowHandling(List<Brick> bricks, TaskCar activeCar, StandController sourceStand)
+    private void SendBricksToActiveCarWithOverflowHandling(List<Brick> bricks, TaskCar activeCar,
+        StandController sourceStand)
     {
         if (_taskCarManager == null || activeCar == null)
         {
