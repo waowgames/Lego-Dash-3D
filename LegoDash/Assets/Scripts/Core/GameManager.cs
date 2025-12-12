@@ -155,7 +155,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
         if (topColor.Value == activeCar.TaskColor)
         {
-            SendBricksToActiveCarWithOverflowHandling(brickGroup, activeCar);
+            SendBricksToActiveCarWithOverflowHandling(brickGroup, activeCar, stand);
         }
         else
         {
@@ -168,7 +168,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         _taskCarManager?.AddBricksToActiveCar(bricks);
     }
 
-    private void SendBricksToActiveCarWithOverflowHandling(List<Brick> bricks, TaskCar activeCar)
+    private void SendBricksToActiveCarWithOverflowHandling(List<Brick> bricks, TaskCar activeCar, StandController sourceStand)
     {
         if (_taskCarManager == null || activeCar == null)
         {
@@ -192,14 +192,20 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         var bricksForTask = bricks.Take(remainingNeed).ToList();
         var overflow = bricks.Skip(remainingNeed).ToList();
 
-        if (_temporaryZone != null && !_temporaryZone.CanAccept(overflow.Count))
+        SendToActiveCar(bricksForTask);
+
+        if (overflow.Count == 0)
         {
-            FailLevel();
             return;
         }
 
-        SendToActiveCar(bricksForTask);
-        SendToTemporaryZone(overflow);
+        if (_temporaryZone != null && _temporaryZone.CanAccept(overflow.Count))
+        {
+            SendToTemporaryZone(overflow);
+            return;
+        }
+
+        sourceStand?.ReturnBricksToTop(overflow);
     }
 
     private void SendToTemporaryZone(List<Brick> bricks)

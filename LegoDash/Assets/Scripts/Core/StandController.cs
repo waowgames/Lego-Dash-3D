@@ -76,6 +76,32 @@ public class StandController : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns bricks back to the top of the stand, preserving their order.
+    /// </summary>
+    public void ReturnBricksToTop(List<Brick> bricks)
+    {
+        if (bricks == null || bricks.Count == 0)
+        {
+            return;
+        }
+
+        int startIndex = _bricks.Count;
+        for (int i = 0; i < bricks.Count; i++)
+        {
+            var brick = bricks[i];
+            var brickTransform = brick.Instance != null ? brick.Instance.transform : null;
+
+            if (brickTransform != null)
+            {
+                brickTransform.SetParent(_brickParent == null ? transform : _brickParent);
+                PositionBrick(brickTransform, startIndex + i);
+            }
+
+            _bricks.Add(brick);
+        }
+    }
+
+    /// <summary>
     /// Destroys existing brick instances and clears the stack.
     /// </summary>
     public void ClearBricks()
