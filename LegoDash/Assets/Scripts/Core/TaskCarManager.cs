@@ -115,6 +115,10 @@ public class TaskCarManager : MonoBehaviour
         {
             _cars.Add(completedCar);
         }
+        else
+        {
+            yield return MoveCompletedCarOut(completedCar);
+        }
 
         var moveSequence = DOTween.Sequence();
         for (int i = 0; i < _cars.Count; i++)
@@ -132,10 +136,6 @@ public class TaskCarManager : MonoBehaviour
             var recycledCar = _cars[recycledIndex];
             recycledCar.transform.localPosition = GetLocalPositionForIndex(recycledIndex);
             recycledCar.Initialize(recycledCar.TaskColor, recycledCar.RequiredBrickCount);
-        }
-        else
-        {
-            yield return MoveCompletedCarOut(completedCar);
         }
 
         _isAdvancing = false;

@@ -48,6 +48,7 @@ public class TaskCar : MonoBehaviour
     private readonly List<Brick> _placedBricks = new();
     private Dictionary<BrickColor, Material> _materialLookup;
     private Color _baseColor = Color.white;
+    private int _incomingBricksCount;
 
     public BrickColor TaskColor { get; private set; }
     public int RequiredBrickCount { get; private set; }
@@ -97,10 +98,10 @@ public class TaskCar : MonoBehaviour
             return;
         }
 
-        int capacity = RemainingNeed();
+        int capacity = Mathf.Max(0, RequiredBrickCount - CurrentBrickCount - _incomingBricksCount);
         if (_brickSlots.Count > 0)
         {
-            capacity = Mathf.Min(capacity, _brickSlots.Count - CurrentBrickCount);
+            capacity = Mathf.Min(capacity, _brickSlots.Count - CurrentBrickCount - _incomingBricksCount);
         }
         if (capacity <= 0)
         {
@@ -127,6 +128,7 @@ public class TaskCar : MonoBehaviour
             return;
         }
 
+        _incomingBricksCount += acceptedBricks.Count;
         StartCoroutine(MoveBricksToCar(acceptedBricks));
     }
 
@@ -167,6 +169,7 @@ public class TaskCar : MonoBehaviour
 
         void OnBrickArrived(Brick arrivedBrick)
         {
+            _incomingBricksCount = Mathf.Max(0, _incomingBricksCount - 1);
             _placedBricks.Add(arrivedBrick);
             if (!completionTriggered && IsCompleted)
             {
@@ -248,6 +251,7 @@ public class TaskCar : MonoBehaviour
         }
 
         _placedBricks.Clear();
+        _incomingBricksCount = 0;
     }
 }
 
