@@ -28,6 +28,16 @@ public class TaskCarManager : MonoBehaviour
     [SerializeField]
     private bool _recycleCompletedCars;
 
+    [Header("Completed Car Exit")]
+    [SerializeField]
+    private float _completedTravelDistance = 5f;
+
+    [SerializeField]
+    private float _completedTravelDuration = 0.5f;
+
+    [SerializeField]
+    private Ease _completedTravelEase = Ease.OutCubic;
+
     private readonly List<TaskCar> _cars = new();
     private bool _isAdvancing;
 
@@ -71,7 +81,7 @@ public class TaskCarManager : MonoBehaviour
 
     public void AddBricksToActiveCar(List<Brick> bricks)
     {
-        if (ActiveCar == null || bricks == null || bricks.Count == 0)
+        if (_isAdvancing || ActiveCar == null || bricks == null || bricks.Count == 0)
         {
             return;
         }
@@ -105,6 +115,10 @@ public class TaskCarManager : MonoBehaviour
         {
             _cars.Add(completedCar);
         }
+        else
+        {
+            yield return MoveCompletedCarOut(completedCar);
+        }
 
         var moveSequence = DOTween.Sequence();
         for (int i = 0; i < _cars.Count; i++)
@@ -122,10 +136,6 @@ public class TaskCarManager : MonoBehaviour
             var recycledCar = _cars[recycledIndex];
             recycledCar.transform.localPosition = GetLocalPositionForIndex(recycledIndex);
             recycledCar.Initialize(recycledCar.TaskColor, recycledCar.RequiredBrickCount);
-        }
-        else
-        {
-            Destroy(completedCar.gameObject);
         }
 
         _isAdvancing = false;
@@ -154,6 +164,25 @@ public class TaskCarManager : MonoBehaviour
         }
 
         OnActiveCarChanged?.Invoke(ActiveCar);
+    }
+
+    private IEnumerator MoveCompletedCarOut(TaskCar completedCar)
+    {
+        if (completedCar == null)
+        {
+            yield break;
+        }
+
+        var parent = _convoyRoot == null ? transform : _convoyRoot;
+        var forward = parent.right.normalized;
+        var exitTarget = completedCar.transform.localPosition + forward * _completedTravelDistance;
+
+        yield return completedCar.transform
+            .DOLocalMove(exitTarget, _completedTravelDuration)
+            .SetEase(_completedTravelEase)
+            .WaitForCompletion();
+
+        Destroy(completedCar.gameObject);
     }
 
     private void ClearExistingCars()

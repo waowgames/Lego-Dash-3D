@@ -48,6 +48,7 @@ public class TaskCar : MonoBehaviour
     private readonly List<Brick> _placedBricks = new();
     private Dictionary<BrickColor, Material> _materialLookup;
     private Color _baseColor = Color.white;
+    private int _incomingBricksCount;
 
     public BrickColor TaskColor { get; private set; }
     public int RequiredBrickCount { get; private set; }
@@ -87,7 +88,7 @@ public class TaskCar : MonoBehaviour
 
     public int RemainingNeed()
     {
-        return Mathf.Max(0, RequiredBrickCount - CurrentBrickCount);
+        return Mathf.Max(0, RequiredBrickCount - CurrentBrickCount - _incomingBricksCount);
     }
 
     public void AddBricks(List<Brick> bricks)
@@ -97,10 +98,10 @@ public class TaskCar : MonoBehaviour
             return;
         }
 
-        int capacity = RemainingNeed();
+        int capacity = Mathf.Max(0, RequiredBrickCount - CurrentBrickCount - _incomingBricksCount);
         if (_brickSlots.Count > 0)
         {
-            capacity = Mathf.Min(capacity, _brickSlots.Count - CurrentBrickCount);
+            capacity = Mathf.Min(capacity, _brickSlots.Count - CurrentBrickCount - _incomingBricksCount);
         }
         if (capacity <= 0)
         {
@@ -108,6 +109,7 @@ public class TaskCar : MonoBehaviour
         }
 
         var acceptedBricks = new List<Brick>();
+        int reservedStartIndex = CurrentBrickCount + _incomingBricksCount;
         foreach (var brick in bricks)
         {
             if (!CanAcceptBrickColor(brick.Color))
@@ -127,7 +129,8 @@ public class TaskCar : MonoBehaviour
             return;
         }
 
-        StartCoroutine(MoveBricksToCar(acceptedBricks));
+        _incomingBricksCount += acceptedBricks.Count;
+        StartCoroutine(MoveBricksToCar(acceptedBricks, reservedStartIndex));
     }
 
     private void BuildMaterialLookup()
@@ -159,14 +162,14 @@ public class TaskCar : MonoBehaviour
         _baseColor = _bodyRenderer.material.color;
     }
 
-    private IEnumerator MoveBricksToCar(List<Brick> bricks)
+    private IEnumerator MoveBricksToCar(List<Brick> bricks, int startIndex)
     {
         bricks.Reverse();
-        int startIndex = CurrentBrickCount;
         bool completionTriggered = IsCompleted;
 
         void OnBrickArrived(Brick arrivedBrick)
         {
+            _incomingBricksCount = Mathf.Max(0, _incomingBricksCount - 1);
             _placedBricks.Add(arrivedBrick);
             if (!completionTriggered && IsCompleted)
             {
@@ -248,6 +251,7 @@ public class TaskCar : MonoBehaviour
         }
 
         _placedBricks.Clear();
+        _incomingBricksCount = 0;
     }
 }
 
