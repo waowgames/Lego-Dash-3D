@@ -1346,6 +1346,9 @@ MonoBehaviour:
   _convoyMoveDuration: 0.4
   _convoyMoveEase: 9
   _recycleCompletedCars: 0
+  _completedTravelDistance: 10
+  _completedTravelDuration: 0.5
+  _completedTravelEase: 9
 --- !u!1 &656917389
 GameObject:
   m_ObjectHideFlags: 0

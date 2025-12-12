@@ -15,11 +15,11 @@ MonoBehaviour:
   levelName: Level
   tasks:
   - color: 0
-    requiredCount: 3
+    requiredCount: 9
   - color: 1
-    requiredCount: 6
+    requiredCount: 9
   - color: 2
-    requiredCount: 6
+    requiredCount: 9
   stands:
   - standId: Stand
     bricks: 000000000000000000000000000000000100000001000000020000000200000002000000
