@@ -175,7 +175,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             return;
         }
 
-        int remainingNeed = Mathf.Max(0, activeCar.RequiredBrickCount - activeCar.CurrentBrickCount);
+        int remainingNeed = activeCar.RemainingNeed();
 
         if (remainingNeed == 0)
         {
@@ -239,7 +239,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             return;
         }
 
-        int remainingNeed = Mathf.Max(0, activeCar.RequiredBrickCount - activeCar.CurrentBrickCount);
+        int remainingNeed = activeCar.RemainingNeed();
         if (remainingNeed == 0)
         {
             return;

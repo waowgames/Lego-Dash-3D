@@ -88,7 +88,7 @@ public class TaskCar : MonoBehaviour
 
     public int RemainingNeed()
     {
-        return Mathf.Max(0, RequiredBrickCount - CurrentBrickCount);
+        return Mathf.Max(0, RequiredBrickCount - CurrentBrickCount - _incomingBricksCount);
     }
 
     public void AddBricks(List<Brick> bricks)
@@ -109,6 +109,7 @@ public class TaskCar : MonoBehaviour
         }
 
         var acceptedBricks = new List<Brick>();
+        int reservedStartIndex = CurrentBrickCount + _incomingBricksCount;
         foreach (var brick in bricks)
         {
             if (!CanAcceptBrickColor(brick.Color))
@@ -129,7 +130,7 @@ public class TaskCar : MonoBehaviour
         }
 
         _incomingBricksCount += acceptedBricks.Count;
-        StartCoroutine(MoveBricksToCar(acceptedBricks));
+        StartCoroutine(MoveBricksToCar(acceptedBricks, reservedStartIndex));
     }
 
     private void BuildMaterialLookup()
@@ -161,10 +162,9 @@ public class TaskCar : MonoBehaviour
         _baseColor = _bodyRenderer.material.color;
     }
 
-    private IEnumerator MoveBricksToCar(List<Brick> bricks)
+    private IEnumerator MoveBricksToCar(List<Brick> bricks, int startIndex)
     {
         bricks.Reverse();
-        int startIndex = CurrentBrickCount;
         bool completionTriggered = IsCompleted;
 
         void OnBrickArrived(Brick arrivedBrick)
