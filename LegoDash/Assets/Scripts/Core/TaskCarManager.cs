@@ -142,8 +142,8 @@ public class TaskCarManager : MonoBehaviour
 
     private Vector3 GetLocalPositionForIndex(int index)
     {
-        var forward = (_convoyRoot == null ? transform : _convoyRoot).forward;
-        return forward.normalized * (_carSpacing * index);
+        var forward = (_convoyRoot == null ? transform : _convoyRoot).right;
+        return -forward.normalized * (_carSpacing * index);
     }
 
     private void RefreshActiveCar()
