@@ -34,9 +34,7 @@ public class LevelTaskDefinition
 [System.Serializable]
 public class StandLayout
 {
-    [SerializeField] private string standId = "Stand";
     [SerializeField] private List<BrickColor> bricks = new();
 
-    public string StandId => string.IsNullOrWhiteSpace(standId) ? "Stand" : standId;
     public IReadOnlyList<BrickColor> Bricks => bricks;
 }
