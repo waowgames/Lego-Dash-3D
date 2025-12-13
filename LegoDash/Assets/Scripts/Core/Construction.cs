@@ -18,10 +18,6 @@ public class Construction : MonoBehaviour
     [SerializeField]
     private string _builtObjectRootName = "BuiltObjectRoot";
 
-    [Tooltip("Bir görev tamamlandığında açılacak parça sayısı.")]
-    [SerializeField, Min(1)]
-    private int _piecesPerTaskCompletion = 1;
-
     [Header("Animation")]
     [SerializeField]
     private float _brickTravelDuration = 0.5f;
@@ -51,11 +47,6 @@ public class Construction : MonoBehaviour
         _nextPieceIndex = 0;
         _completionBroadcasted = false;
 
-        if (config != null)
-        {
-            _piecesPerTaskCompletion = Mathf.Max(1, config.PiecesPerTask);
-        }
-
         _builtObjectRoot = ResolveBuiltObjectRoot(transform);
 
         if (_builtObjectRoot == null)
@@ -65,11 +56,6 @@ public class Construction : MonoBehaviour
         }
 
         CachePieces();
-    }
-
-    public void SetPiecesPerTaskCompletion(int piecesCount)
-    {
-        _piecesPerTaskCompletion = Mathf.Max(1, piecesCount);
     }
 
     public IEnumerator BuildWithBricks(List<Brick> bricks)
@@ -85,7 +71,7 @@ public class Construction : MonoBehaviour
         }
 
         int availablePieces = Mathf.Max(0, _pieces.Count - _nextPieceIndex);
-        int piecesToOpen = Mathf.Min(_piecesPerTaskCompletion, availablePieces, bricks.Count);
+        int piecesToOpen = Mathf.Min(availablePieces, bricks.Count);
 
         for (int i = 0; i < bricks.Count; i++)
         {

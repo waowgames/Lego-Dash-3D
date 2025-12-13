@@ -57,10 +57,6 @@ public class TaskCarManager : MonoBehaviour
     public void SetConstruction(Construction construction)
     {
         _construction = construction;
-        if (_construction != null)
-        {
-            _construction.SetPiecesPerTaskCompletion(_bricksPerTask);
-        }
     }
 
     public void BuildConvoyFromConfig(IReadOnlyList<LevelTaskDefinition> tasks)
@@ -91,11 +87,6 @@ public class TaskCarManager : MonoBehaviour
             car.SetActive(false);
             car.OnCompleted += HandleCarCompleted;
             _cars.Add(car);
-        }
-
-        if (_construction != null)
-        {
-            _construction.SetPiecesPerTaskCompletion(_bricksPerTask);
         }
 
         RefreshActiveCar();
