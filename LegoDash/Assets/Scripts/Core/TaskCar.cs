@@ -189,6 +189,7 @@ public class TaskCar : MonoBehaviour
         {
             var brick = bricks[i];
             int targetIndex = startIndex + i;
+            float delay = _moveStaggerDelay * i;
 
             if (brick.Instance != null)
             {
@@ -196,19 +197,28 @@ public class TaskCar : MonoBehaviour
                 brickTransform.SetParent(_stackAnchor == null ? transform : _stackAnchor);
 
                 var targetPosition = GetTargetPosition(targetIndex);
-                StartCoroutine(MoveBrick(brickTransform, targetPosition, () => OnBrickArrived(brick)));
+                StartCoroutine(MoveBrickWithDelay(brickTransform, targetPosition, delay, () => OnBrickArrived(brick)));
             }
-
-            if (brick.Instance == null)
+            else
             {
+                if (delay > 0f)
+                {
+                    yield return new WaitForSeconds(delay);
+                }
+
                 OnBrickArrived(brick);
             }
-
-            if (_moveStaggerDelay > 0f)
-            {
-                yield return new WaitForSeconds(_moveStaggerDelay);
-            }
         }
+    }
+
+    private IEnumerator MoveBrickWithDelay(Transform brickTransform, Vector3 targetPosition, float delay, Action onComplete)
+    {
+        if (delay > 0f)
+        {
+            yield return new WaitForSeconds(delay);
+        }
+
+        yield return MoveBrick(brickTransform, targetPosition, onComplete);
     }
 
     private IEnumerator MoveBrick(Transform brickTransform, Vector3 targetPosition, Action onComplete = null)
