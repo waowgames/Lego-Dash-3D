@@ -28,9 +28,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     private Dictionary<BrickColor, GameObject> _prefabLookup;
     private bool _levelFailed;
     private bool _levelCompleted;
-    private bool _levelStarted;
-    private LevelConfig _activeLevelConfig;
-    private int _activeLevelIndex;
+    private bool _levelStarted; 
     private Construction _activeConstruction;
 
     protected override void Awake()
@@ -77,13 +75,10 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     {
         _levelStarted = true;
         _levelFailed = false;
-        _levelCompleted = false;
-        _activeLevelConfig = config;
-        _activeLevelIndex = levelIndex;
+        _levelCompleted = false; 
 
         _temporaryZone?.ResetZone();
-
-        _activeConstruction?.OnConstructionCompleted -= HandleConstructionCompleted;
+ 
 
         if (_constructionManager == null)
         {
