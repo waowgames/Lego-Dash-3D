@@ -74,31 +74,29 @@ public class Construction : MonoBehaviour
         int piecesToOpen = Mathf.Min(availablePieces, bricks.Count);
         int pieceIndex = _nextPieceIndex;
         int openedPieces = 0;
+        int completedBricks = 0;
 
         for (int i = 0; i < bricks.Count; i++)
         {
             var brick = bricks[i];
-            Transform targetPiece = openedPieces < piecesToOpen ? _pieces[pieceIndex] : null;
-            if (brick == null || brick.Instance == null)
+            Transform targetPiece = openedPieces + i < piecesToOpen ? _pieces[pieceIndex + i] : null;
+            float delay = _brickStagger * i;
+
+            StartCoroutine(AnimateBrickTransferWithDelay(brick, targetPiece, delay, () =>
             {
                 if (targetPiece != null)
                 {
                     targetPiece.gameObject.SetActive(true);
                     openedPieces++;
-                    pieceIndex++;
                 }
 
-                continue;
-            }
+                completedBricks++;
+            }));
+        }
 
-            yield return AnimateBrickTransfer(brick, targetPiece);
-
-            if (targetPiece != null)
-            {
-                targetPiece.gameObject.SetActive(true);
-                openedPieces++;
-                pieceIndex++;
-            }
+        while (completedBricks < bricks.Count)
+        {
+            yield return null;
         }
 
         _nextPieceIndex += openedPieces;
@@ -136,10 +134,16 @@ public class Construction : MonoBehaviour
         return root.childCount > 0 ? root.GetChild(0) : null;
     }
 
-    private IEnumerator AnimateBrickTransfer(Brick brick, Transform targetPiece)
+    private IEnumerator AnimateBrickTransferWithDelay(Brick brick, Transform targetPiece, float delay, Action onComplete)
     {
+        if (delay > 0f)
+        {
+            yield return new WaitForSeconds(delay);
+        }
+
         if (brick == null || brick.Instance == null)
         {
+            onComplete?.Invoke();
             yield break;
         }
 
@@ -158,11 +162,7 @@ public class Construction : MonoBehaviour
 
         brickTransform.position = destination;
         brick.Instance.SetActive(false);
-
-        if (_brickStagger > 0f)
-        {
-            yield return new WaitForSeconds(_brickStagger);
-        }
+        onComplete?.Invoke();
     }
 
     private void CheckForCompletion()
