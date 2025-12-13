@@ -72,17 +72,20 @@ public class Construction : MonoBehaviour
 
         int availablePieces = Mathf.Max(0, _pieces.Count - _nextPieceIndex);
         int piecesToOpen = Mathf.Min(availablePieces, bricks.Count);
+        int pieceIndex = _nextPieceIndex;
+        int openedPieces = 0;
 
         for (int i = 0; i < bricks.Count; i++)
         {
             var brick = bricks[i];
-            Transform targetPiece = i < piecesToOpen ? _pieces[_nextPieceIndex + i] : null;
+            Transform targetPiece = openedPieces < piecesToOpen ? _pieces[pieceIndex] : null;
             if (brick == null || brick.Instance == null)
             {
                 if (targetPiece != null)
                 {
                     targetPiece.gameObject.SetActive(true);
-                    _nextPieceIndex++;
+                    openedPieces++;
+                    pieceIndex++;
                 }
 
                 continue;
@@ -93,10 +96,12 @@ public class Construction : MonoBehaviour
             if (targetPiece != null)
             {
                 targetPiece.gameObject.SetActive(true);
-                _nextPieceIndex++;
+                openedPieces++;
+                pieceIndex++;
             }
         }
 
+        _nextPieceIndex += openedPieces;
         CheckForCompletion();
     }
 
