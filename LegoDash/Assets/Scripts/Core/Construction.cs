@@ -152,6 +152,8 @@ public class Construction : MonoBehaviour
             .DOJump(destination, _brickJumpPower, 1, _brickTravelDuration)
             .SetEase(_brickTravelEase);
 
+        brickTransform.DORotate(Vector3.zero, _brickTravelDuration);
+
         yield return tween.WaitForCompletion();
 
         brickTransform.position = destination;
