@@ -8,7 +8,7 @@ public class LevelConfigEditor : Editor
 {
     // Sabitler
     private const int TOTAL_STANDS = 16;
-    private const int MAX_BRICKS_PER_STAND = 9;
+    private const int MAX_BRICKS_PER_STAND = 12;
     private const int MIN_CHUNK_SIZE = 2;
     private const int MAX_CHUNK_SIZE = 5;
 
