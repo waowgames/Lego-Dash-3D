@@ -175,9 +175,14 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         }
     }
 
-    private void SendToActiveCar(List<Brick> bricks)
+    private List<Brick> SendToActiveCar(List<Brick> bricks)
     {
-        _taskCarManager?.AddBricksToActiveCar(bricks);
+        if (_taskCarManager == null)
+        {
+            return bricks;
+        }
+
+        return _taskCarManager.AddBricksToActiveCar(bricks) ?? new List<Brick>();
     }
 
     private void SendBricksToActiveCarWithOverflowHandling(List<Brick> bricks, TaskCar activeCar,
@@ -198,14 +203,23 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
         if (bricks.Count <= remainingNeed)
         {
-            SendToActiveCar(bricks);
+            var rejected = SendToActiveCar(bricks);
+            if (rejected.Count > 0)
+            {
+                sourceStand?.ReturnBricksToTop(rejected);
+            }
             return;
         }
 
         var bricksForTask = bricks.Take(remainingNeed).ToList();
         var overflow = bricks.Skip(remainingNeed).ToList();
 
-        SendToActiveCar(bricksForTask);
+        var leftovers = SendToActiveCar(bricksForTask);
+
+        if (leftovers.Count > 0)
+        {
+            overflow.AddRange(leftovers);
+        }
 
         if (overflow.Count == 0)
         {
@@ -270,7 +284,15 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             return;
         }
 
-        SendToActiveCar(matchingBricks);
+        var rejected = SendToActiveCar(matchingBricks);
+        if (rejected.Count > 0)
+        {
+            var restored = _temporaryZone.AddBricks(rejected);
+            if (!restored)
+            {
+                FailLevel();
+            }
+        }
     }
 
     private void HandleActiveCarChanged(TaskCar activeCar)
