@@ -12,21 +12,11 @@ public class Construction : MonoBehaviour
 {
     [Header("Setup")]
     [SerializeField]
-    private GameObject _defaultConstructionPrefab;
-
-    [SerializeField]
-    private Transform _constructionParent;
-
-    [SerializeField]
     private Transform _builtObjectRootOverride;
 
     [Tooltip("BuiltObjectRoot child adı. Override atanmadıysa buradan aranır.")]
     [SerializeField]
     private string _builtObjectRootName = "BuiltObjectRoot";
-
-    [Tooltip("Bir görev tamamlandığında açılacak parça sayısı.")]
-    [SerializeField, Min(1)]
-    private int _piecesPerTaskCompletion = 1;
 
     [Header("Animation")]
     [SerializeField]
@@ -41,7 +31,6 @@ public class Construction : MonoBehaviour
     [SerializeField]
     private Ease _brickTravelEase = Ease.OutQuad;
 
-    private GameObject _activeConstructionInstance;
     private Transform _builtObjectRoot;
     private readonly List<Transform> _pieces = new();
     private int _nextPieceIndex;
@@ -53,34 +42,12 @@ public class Construction : MonoBehaviour
 
     public void InitializeForLevel(LevelConfig config)
     {
-        if (_activeConstructionInstance != null)
-        {
-            Destroy(_activeConstructionInstance);
-            _activeConstructionInstance = null;
-        }
-
         _pieces.Clear();
         _builtObjectRoot = null;
         _nextPieceIndex = 0;
         _completionBroadcasted = false;
 
-        if (config != null)
-        {
-            _piecesPerTaskCompletion = Mathf.Max(1, config.PiecesPerTask);
-        }
-
-        var prefab = config != null && config.ConstructionPrefab != null
-            ? config.ConstructionPrefab
-            : _defaultConstructionPrefab;
-
-        if (prefab == null)
-        {
-            Debug.LogWarning("Inşaat prefab'ı atanmadı.");
-            return;
-        }
-
-        _activeConstructionInstance = Instantiate(prefab, _constructionParent == null ? transform : _constructionParent);
-        _builtObjectRoot = ResolveBuiltObjectRoot(_activeConstructionInstance.transform);
+        _builtObjectRoot = ResolveBuiltObjectRoot(transform);
 
         if (_builtObjectRoot == null)
         {
@@ -104,18 +71,21 @@ public class Construction : MonoBehaviour
         }
 
         int availablePieces = Mathf.Max(0, _pieces.Count - _nextPieceIndex);
-        int piecesToOpen = Mathf.Min(_piecesPerTaskCompletion, availablePieces, bricks.Count);
+        int piecesToOpen = Mathf.Min(availablePieces, bricks.Count);
+        int pieceIndex = _nextPieceIndex;
+        int openedPieces = 0;
 
         for (int i = 0; i < bricks.Count; i++)
         {
             var brick = bricks[i];
-            Transform targetPiece = i < piecesToOpen ? _pieces[_nextPieceIndex + i] : null;
+            Transform targetPiece = openedPieces < piecesToOpen ? _pieces[pieceIndex] : null;
             if (brick == null || brick.Instance == null)
             {
                 if (targetPiece != null)
                 {
                     targetPiece.gameObject.SetActive(true);
-                    _nextPieceIndex++;
+                    openedPieces++;
+                    pieceIndex++;
                 }
 
                 continue;
@@ -126,10 +96,12 @@ public class Construction : MonoBehaviour
             if (targetPiece != null)
             {
                 targetPiece.gameObject.SetActive(true);
-                _nextPieceIndex++;
+                openedPieces++;
+                pieceIndex++;
             }
         }
 
+        _nextPieceIndex += openedPieces;
         CheckForCompletion();
     }
 
