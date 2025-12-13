@@ -16,7 +16,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     [SerializeField] private TemporaryZoneController _temporaryZone;
 
     [Header("Construction")] [SerializeField]
-    private Construction _construction;
+    private ConstructionManager _constructionManager;
 
     [Header("Bricks")] [SerializeField] private List<BrickPrefabMapping> _brickPrefabs = new();
 
@@ -31,6 +31,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     private bool _levelStarted;
     private LevelConfig _activeLevelConfig;
     private int _activeLevelIndex;
+    private Construction _activeConstruction;
 
     protected override void Awake()
     {
@@ -41,12 +42,6 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         {
             _taskCarManager.OnActiveCarChanged += HandleActiveCarChanged;
             _taskCarManager.OnAllCarsCompleted += HandleAllCarsCompleted;
-            _taskCarManager.SetConstruction(_construction); 
-        }
-
-        if (_construction != null)
-        {
-            _construction.OnConstructionCompleted += HandleConstructionCompleted;
         }
     }
 
@@ -67,9 +62,9 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             _taskCarManager.OnAllCarsCompleted -= HandleAllCarsCompleted;
         }
 
-        if (_construction != null)
+        if (_activeConstruction != null)
         {
-            _construction.OnConstructionCompleted -= HandleConstructionCompleted;
+            _activeConstruction.OnConstructionCompleted -= HandleConstructionCompleted;
         }
     }
 
@@ -88,9 +83,19 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
         _temporaryZone?.ResetZone();
 
-        if (_construction != null)
+        _activeConstruction?.OnConstructionCompleted -= HandleConstructionCompleted;
+
+        if (_constructionManager == null)
         {
-            _construction.InitializeForLevel(config); 
+            Debug.LogWarning("ConstructionManager atanmadı; inşaat kurulumu atlanacak.");
+        }
+
+        _activeConstruction = _constructionManager != null ? _constructionManager.InitializeForLevel(config) : null;
+        _taskCarManager?.SetConstruction(_activeConstruction);
+
+        if (_activeConstruction != null)
+        {
+            _activeConstruction.OnConstructionCompleted += HandleConstructionCompleted;
         }
 
         if (config == null)

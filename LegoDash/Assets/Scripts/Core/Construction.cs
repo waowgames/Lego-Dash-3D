@@ -12,12 +12,6 @@ public class Construction : MonoBehaviour
 {
     [Header("Setup")]
     [SerializeField]
-    private GameObject _defaultConstructionPrefab;
-
-    [SerializeField]
-    private Transform _constructionParent;
-
-    [SerializeField]
     private Transform _builtObjectRootOverride;
 
     [Tooltip("BuiltObjectRoot child adı. Override atanmadıysa buradan aranır.")]
@@ -41,7 +35,6 @@ public class Construction : MonoBehaviour
     [SerializeField]
     private Ease _brickTravelEase = Ease.OutQuad;
 
-    private GameObject _activeConstructionInstance;
     private Transform _builtObjectRoot;
     private readonly List<Transform> _pieces = new();
     private int _nextPieceIndex;
@@ -53,12 +46,6 @@ public class Construction : MonoBehaviour
 
     public void InitializeForLevel(LevelConfig config)
     {
-        if (_activeConstructionInstance != null)
-        {
-            Destroy(_activeConstructionInstance);
-            _activeConstructionInstance = null;
-        }
-
         _pieces.Clear();
         _builtObjectRoot = null;
         _nextPieceIndex = 0;
@@ -69,18 +56,7 @@ public class Construction : MonoBehaviour
             _piecesPerTaskCompletion = Mathf.Max(1, config.PiecesPerTask);
         }
 
-        var prefab = config != null && config.ConstructionPrefab != null
-            ? config.ConstructionPrefab
-            : _defaultConstructionPrefab;
-
-        if (prefab == null)
-        {
-            Debug.LogWarning("Inşaat prefab'ı atanmadı.");
-            return;
-        }
-
-        _activeConstructionInstance = Instantiate(prefab, _constructionParent == null ? transform : _constructionParent);
-        _builtObjectRoot = ResolveBuiltObjectRoot(_activeConstructionInstance.transform);
+        _builtObjectRoot = ResolveBuiltObjectRoot(transform);
 
         if (_builtObjectRoot == null)
         {
@@ -89,6 +65,11 @@ public class Construction : MonoBehaviour
         }
 
         CachePieces();
+    }
+
+    public void SetPiecesPerTaskCompletion(int piecesCount)
+    {
+        _piecesPerTaskCompletion = Mathf.Max(1, piecesCount);
     }
 
     public IEnumerator BuildWithBricks(List<Brick> bricks)

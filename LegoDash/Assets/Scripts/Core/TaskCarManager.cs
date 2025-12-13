@@ -28,6 +28,10 @@ public class TaskCarManager : MonoBehaviour
     [SerializeField]
     private bool _recycleCompletedCars;
 
+    [Header("Task Setup")]
+    [SerializeField, Min(1)]
+    private int _bricksPerTask = 9;
+
     [Header("Construction")]
     [SerializeField]
     private Construction _construction;
@@ -53,6 +57,10 @@ public class TaskCarManager : MonoBehaviour
     public void SetConstruction(Construction construction)
     {
         _construction = construction;
+        if (_construction != null)
+        {
+            _construction.SetPiecesPerTaskCompletion(_bricksPerTask);
+        }
     }
 
     public void BuildConvoyFromConfig(IReadOnlyList<LevelTaskDefinition> tasks)
@@ -79,10 +87,15 @@ public class TaskCarManager : MonoBehaviour
             var def = tasks[i];
             var car = Instantiate(_taskCarPrefab, _convoyRoot == null ? transform : _convoyRoot);
             car.transform.localPosition = GetLocalPositionForIndex(i);
-            car.Initialize(def.Color, def.RequiredCount);
+            car.Initialize(def.Color, _bricksPerTask);
             car.SetActive(false);
             car.OnCompleted += HandleCarCompleted;
             _cars.Add(car);
+        }
+
+        if (_construction != null)
+        {
+            _construction.SetPiecesPerTaskCompletion(_bricksPerTask);
         }
 
         RefreshActiveCar();
