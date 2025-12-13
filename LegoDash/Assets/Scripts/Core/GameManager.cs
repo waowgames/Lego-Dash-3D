@@ -285,7 +285,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
     private void HandleAllCarsCompleted()
     {
-        if (_construction == null)
+        if (_activeConstruction == null)
         {
             _levelCompleted = true;
             Debug.Log("All tasks completed! Level clear.");
@@ -293,7 +293,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             return;
         }
 
-        if (_construction.IsComplete)
+        if (_activeConstruction.IsComplete)
         {
             HandleConstructionCompleted();
         }
