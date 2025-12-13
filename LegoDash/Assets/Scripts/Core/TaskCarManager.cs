@@ -92,14 +92,14 @@ public class TaskCarManager : MonoBehaviour
         RefreshActiveCar();
     }
 
-    public void AddBricksToActiveCar(List<Brick> bricks)
+    public List<Brick> AddBricksToActiveCar(List<Brick> bricks)
     {
         if (_isAdvancing || ActiveCar == null || bricks == null || bricks.Count == 0)
         {
-            return;
+            return bricks;
         }
 
-        ActiveCar.AddBricks(bricks);
+        return ActiveCar.AddBricks(bricks);
     }
 
     public int GetActiveRemainingNeed()

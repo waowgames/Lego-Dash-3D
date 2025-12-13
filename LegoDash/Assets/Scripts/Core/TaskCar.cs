@@ -98,11 +98,11 @@ public class TaskCar : MonoBehaviour
         return bricks;
     }
 
-    public void AddBricks(List<Brick> bricks)
+    public List<Brick> AddBricks(List<Brick> bricks)
     {
         if (bricks == null || bricks.Count == 0)
         {
-            return;
+            return bricks;
         }
 
         int capacity = Mathf.Max(0, RequiredBrickCount - CurrentBrickCount - _incomingBricksCount);
@@ -112,32 +112,32 @@ public class TaskCar : MonoBehaviour
         }
         if (capacity <= 0)
         {
-            return;
+            return bricks;
         }
 
         var acceptedBricks = new List<Brick>();
+        var rejectedBricks = new List<Brick>();
         int reservedStartIndex = CurrentBrickCount + _incomingBricksCount;
         foreach (var brick in bricks)
         {
-            if (!CanAcceptBrickColor(brick.Color))
+            if (acceptedBricks.Count >= capacity || !CanAcceptBrickColor(brick.Color))
             {
+                rejectedBricks.Add(brick);
                 continue;
             }
 
             acceptedBricks.Add(brick);
-            if (acceptedBricks.Count >= capacity)
-            {
-                break;
-            }
         }
 
         if (acceptedBricks.Count == 0)
         {
-            return;
+            return bricks;
         }
 
         _incomingBricksCount += acceptedBricks.Count;
         StartCoroutine(MoveBricksToCar(acceptedBricks, reservedStartIndex));
+
+        return rejectedBricks;
     }
 
     private void BuildMaterialLookup()
