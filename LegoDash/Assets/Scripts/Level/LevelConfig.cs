@@ -27,10 +27,8 @@ public class LevelConfig : ScriptableObject
 public class LevelTaskDefinition
 {
     [SerializeField] private BrickColor color = BrickColor.Blue;
-    [SerializeField, Min(1)] private int requiredCount = 1;
-
     public BrickColor Color => color;
-    public int RequiredCount => Mathf.Max(1, requiredCount);
+    public int RequiredCount => 9;
 }
 
 [System.Serializable]
