@@ -172,8 +172,10 @@ public class Construction : MonoBehaviour
         var tween = brickTransform
             .DOJump(destination, _brickJumpPower, 1, _brickTravelDuration)
             .SetEase(_brickTravelEase);
+        
+        var rotateTravelDuration = _brickTravelDuration/100 * 90;
 
-        brickTransform.DORotate(Vector3.zero, _brickTravelDuration);
+        brickTransform.DORotate(Vector3.zero,  rotateTravelDuration);
 
         yield return tween.WaitForCompletion();
 
