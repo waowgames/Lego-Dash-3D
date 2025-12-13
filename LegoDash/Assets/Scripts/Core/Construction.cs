@@ -31,8 +31,22 @@ public class Construction : MonoBehaviour
     [SerializeField]
     private Ease _brickTravelEase = Ease.OutQuad;
 
+    [Header("Piece Reveal Animation")]
+    [SerializeField]
+    private float _piecePunchDuration = 0.35f;
+
+    [SerializeField]
+    private float _piecePunchStrength = 0.2f;
+
+    [SerializeField]
+    private int _piecePunchVibrato = 10;
+
+    [SerializeField]
+    private float _piecePunchElasticity = 0.8f;
+
     private Transform _builtObjectRoot;
     private readonly List<Transform> _pieces = new();
+    private readonly Dictionary<Transform, Vector3> _pieceBaseScales = new();
     private int _nextPieceIndex;
     private bool _completionBroadcasted;
 
@@ -43,6 +57,7 @@ public class Construction : MonoBehaviour
     public void InitializeForLevel(LevelConfig config)
     {
         _pieces.Clear();
+        _pieceBaseScales.Clear();
         _builtObjectRoot = null;
         _nextPieceIndex = 0;
         _completionBroadcasted = false;
@@ -87,6 +102,7 @@ public class Construction : MonoBehaviour
                 if (targetPiece != null)
                 {
                     targetPiece.gameObject.SetActive(true);
+                    PlayPieceRevealAnimation(targetPiece);
                     openedPieces++;
                 }
 
@@ -109,6 +125,7 @@ public class Construction : MonoBehaviour
         foreach (Transform child in _builtObjectRoot)
         {
             _pieces.Add(child);
+            _pieceBaseScales[child] = child.localScale;
             child.gameObject.SetActive(false);
         }
     }
@@ -163,6 +180,25 @@ public class Construction : MonoBehaviour
         brickTransform.position = destination;
         brick.Instance.SetActive(false);
         onComplete?.Invoke();
+    }
+
+    private void PlayPieceRevealAnimation(Transform piece)
+    {
+        if (piece == null)
+        {
+            return;
+        }
+
+        piece.DOKill();
+
+        if (_pieceBaseScales.TryGetValue(piece, out var baseScale))
+        {
+            piece.localScale = baseScale;
+        }
+
+        piece
+            .DOPunchScale(Vector3.one * _piecePunchStrength, _piecePunchDuration, _piecePunchVibrato, _piecePunchElasticity)
+            .SetEase(Ease.OutQuad);
     }
 
     private void CheckForCompletion()
