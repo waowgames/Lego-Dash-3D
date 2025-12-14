@@ -119,6 +119,44 @@ public class Construction : MonoBehaviour
         CheckForCompletion();
     }
 
+    public IEnumerator PlayCompletionCelebration(float pieceDelay, float punchStrength, float duration)
+    {
+        if (_builtObjectRoot == null)
+        {
+            yield break;
+        }
+
+        if (_pieces.Count == 0)
+        {
+            CachePieces();
+        }
+
+        foreach (var piece in _pieces)
+        {
+            if (piece == null)
+            {
+                continue;
+            }
+
+            piece.gameObject.SetActive(true);
+            piece.DOKill();
+
+            if (_pieceBaseScales.TryGetValue(piece, out var baseScale))
+            {
+                piece.localScale = baseScale;
+            }
+
+            piece
+                .DOPunchScale(Vector3.one * punchStrength, duration, _piecePunchVibrato, _piecePunchElasticity)
+                .SetEase(Ease.OutQuad);
+
+            if (pieceDelay > 0f)
+            {
+                yield return new WaitForSeconds(pieceDelay);
+            }
+        }
+    }
+
     private void CachePieces()
     {
         _pieces.Clear();
