@@ -1,6 +1,6 @@
 using System.Collections;
-using System.Collections.Generic;
-using Cinemachine;
+using System.Collections.Generic; 
+using Unity.Cinemachine;
 using UnityEngine;
 
 public class LevelCompletionFlow : MonoBehaviour
@@ -13,10 +13,9 @@ public class LevelCompletionFlow : MonoBehaviour
     [Header("Gameplay Objects to Toggle")]
     [SerializeField] private List<GameObject> gameplayObjects = new();
 
-    [Header("Cameras")]
-    [SerializeField] private CinemachineBrain cinemachineBrain;
-    [SerializeField] private CinemachineVirtualCamera gameplayCamera;
-    [SerializeField] private CinemachineVirtualCamera constructionCamera;
+    [Header("Cameras")] 
+    [SerializeField] private CinemachineVirtualCameraBase gameplayCamera;
+    [SerializeField] private CinemachineVirtualCameraBase constructionCamera;
 
     [Header("Construction Celebration")]
     [SerializeField] private float celebrationPieceDelay = 0.05f;
@@ -105,8 +104,7 @@ public class LevelCompletionFlow : MonoBehaviour
         _cachedGameplayPriority = gameplayCamera.Priority;
 
         constructionCamera.Priority = Mathf.Max(_cachedConstructionPriority, _cachedGameplayPriority) + 1;
-
-        yield return WaitForCameraBlend();
+ 
     }
 
     private IEnumerator SwitchToGameplayCamera()
@@ -118,24 +116,11 @@ public class LevelCompletionFlow : MonoBehaviour
 
         gameplayCamera.Priority = Mathf.Max(_cachedConstructionPriority, _cachedGameplayPriority) + 1;
         constructionCamera.Priority = _cachedConstructionPriority;
-
-        yield return WaitForCameraBlend();
+ 
 
         gameplayCamera.Priority = _cachedGameplayPriority;
     }
-
-    private IEnumerator WaitForCameraBlend()
-    {
-        if (cinemachineBrain == null)
-        {
-            yield break;
-        }
-
-        while (cinemachineBrain.IsBlending)
-        {
-            yield return null;
-        }
-    }
+ 
 
     private IEnumerator ShowLevelUpPopup()
     {

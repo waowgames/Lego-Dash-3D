@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5e9e88d21ebe5cc42becf545cbcdb6f5, type: 3}
-  m_Name: Level1
+  m_Name: Level2
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
   levelName: Level
   tasks:
@@ -18,11 +18,15 @@ MonoBehaviour:
   - color: 1
   - color: 2
   - color: 2
+  - color: 3
+  - color: 1
+  - color: 1
   - color: 1
   - color: 0
   - color: 6
   - color: 6
   - color: 6
+  - color: 0
   - color: 0
   - color: 4
   stands:
@@ -44,4 +48,4 @@ MonoBehaviour:
   - bricks: 000000000000000000000000020000000200000006000000060000000000000000000000
   timeLimitSeconds: 200
   storageCapacity: 14
-  constructionPrefab: {fileID: 8973662685520896585, guid: a653df17cb8f5f943995a1764a303104, type: 3}
+  constructionPrefab: {fileID: 8973662685520896585, guid: e48610ef33e8c8f41a83afa764c8fc03, type: 3}
