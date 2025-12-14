@@ -117,8 +117,7 @@ public class LevelCompletionFlow : MonoBehaviour
         gameplayCamera.Priority = Mathf.Max(_cachedConstructionPriority, _cachedGameplayPriority) + 1;
         constructionCamera.Priority = _cachedConstructionPriority;
  
-
-        gameplayCamera.Priority = _cachedGameplayPriority;
+ 
     }
  
 
