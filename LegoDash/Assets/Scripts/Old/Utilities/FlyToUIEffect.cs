@@ -127,7 +127,6 @@ public class FlyToUIEffect : MonoBehaviour
         if (_coroutine != null) StopCoroutine(_coroutine);
         _coroutine = StartCoroutine(PlayRoutine(onComplete, money));
         
-        Debug.Log("geldi beee");
     }
 
     private IEnumerator PlayRoutine(Action onComplete, int money)

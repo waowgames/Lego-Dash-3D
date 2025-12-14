@@ -1366,7 +1366,7 @@ MonoBehaviour:
   m_BlockingObjects: 0
   m_BlockingMask:
     serializedVersion: 2
-    m_Bits: 119
+    m_Bits: 55
 --- !u!1 &2005310388137169270
 GameObject:
   m_ObjectHideFlags: 0
@@ -5271,6 +5271,7 @@ GameObject:
   - component: {fileID: 6765790747958616940}
   - component: {fileID: 1573607369332994534}
   - component: {fileID: 730102778199589528}
+  - component: {fileID: 8552283131531707407}
   m_Layer: 0
   m_Name: UI Manager
   m_TagString: Untagged
@@ -5326,8 +5327,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ad505cd63ef54f47969d052aefadaf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeAddedText: {fileID: 0}
-  timeAddedParticles: {fileID: 0}
+  confettiParticle: {fileID: 0}
 --- !u!114 &1573607369332994534
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5340,6 +5340,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdd39e02855741f4a9f6d956583885a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelMissionManager
+  levels:
+  - {fileID: 11400000, guid: 27d20ad96aa731646be1cb00305d8b6b, type: 2}
+  - {fileID: 11400000, guid: 455dec2f2c3bd5e43a5c3c3de49fa5dd, type: 2}
+  startingLevelIndex: 0
+  autoStart: 1
+  autoAdvanceOnSuccess: 1
+  advanceDelaySeconds: 0.75
 --- !u!114 &730102778199589528
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5389,6 +5396,30 @@ MonoBehaviour:
     priceLabel: {fileID: 3492017987065249815}
     ownedContainer: {fileID: 8539710119571332011}
     ownedCountLabel: {fileID: 5972233111018228485}
+--- !u!114 &8552283131531707407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7303356749682882291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0638f172fd46c847bb0330bcf3d638c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelCompletionFlow
+  gameManager: {fileID: 0}
+  levelMissionManager: {fileID: 1573607369332994534}
+  levelUpPopup: {fileID: 4089866481201135754}
+  gameplayObjects:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  gameplayCamera: {fileID: 0}
+  constructionCamera: {fileID: 0}
+  celebrationPieceDelay: 0.05
+  celebrationPunchStrength: 0.08
+  celebrationDuration: 0.15
 --- !u!1 &7446688817049076180
 GameObject:
   m_ObjectHideFlags: 0
@@ -6638,6 +6669,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 8422254910801690449, guid: 10ff371ee4551d6439b694fe8522bdfe, type: 3}
   m_PrefabInstance: {fileID: 8333825938707048288}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4089866481201135754 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5432939205637744618, guid: 10ff371ee4551d6439b694fe8522bdfe, type: 3}
+  m_PrefabInstance: {fileID: 8333825938707048288}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddb88d59ff4e6ae469828a5b0945dde7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &8833013655744511400
 PrefabInstance:
   m_ObjectHideFlags: 0
