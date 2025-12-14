@@ -48,4 +48,4 @@ MonoBehaviour:
   - bricks: 000000000000000000000000020000000200000006000000060000000000000000000000
   timeLimitSeconds: 200
   storageCapacity: 14
-  constructionPrefab: {fileID: 8973662685520896585, guid: a653df17cb8f5f943995a1764a303104, type: 3}
+  constructionPrefab: {fileID: 8973662685520896585, guid: e48610ef33e8c8f41a83afa764c8fc03, type: 3}
