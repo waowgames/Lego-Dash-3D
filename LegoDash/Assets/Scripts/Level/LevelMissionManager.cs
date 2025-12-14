@@ -11,7 +11,7 @@ public class LevelMissionManager : SingletonMonoBehaviour<LevelMissionManager>
     [SerializeField] private List<LevelConfig> levels = new();
     [SerializeField] private int startingLevelIndex = 0;
     [SerializeField] private bool autoStart = true;
-    [SerializeField] private bool autoAdvanceOnSuccess = true;
+    [SerializeField] private bool autoAdvanceOnSuccess = false;
     [SerializeField] private float advanceDelaySeconds = 0.75f;
 
     public LevelConfig CurrentLevelConfig { get; private set; }
@@ -25,6 +25,11 @@ public class LevelMissionManager : SingletonMonoBehaviour<LevelMissionManager>
     private void OnDisable()
     {
         Events.LevelEnded -= HandleLevelEnded;
+    }
+
+    private void Awake()
+    {
+        autoAdvanceOnSuccess = false;
     }
 
     private void Start()

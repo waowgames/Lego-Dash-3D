@@ -76,9 +76,10 @@ public class LevelUpPopup : MonoBehaviour
     {
         // Önce uçuş efekti, bitince para ekle + kapat
         getButton.enabled = false;
+        var callback = _onMissionConfirmed ?? (() => LevelManager.Instance?.NextLevel());
         FlyToUIEffect.Instance.Play(() =>
         {
-            LevelManager.Instance.NextLevel();
+            callback.Invoke();
 
             getButton.enabled = true;
             Hide();
@@ -89,9 +90,10 @@ public class LevelUpPopup : MonoBehaviour
     {
         // Önce uçuş efekti, bitince para ekle + kapat
         getButton.enabled = false;
+        var callback = _onMissionConfirmed ?? (() => LevelManager.Instance?.NextLevel());
         FlyToUIEffect.Instance.Play(() =>
         {
-            LevelManager.Instance.NextLevel();
+            callback.Invoke();
 
             getButton.enabled = true;
             Hide();

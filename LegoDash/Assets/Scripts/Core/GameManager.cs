@@ -28,7 +28,8 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     private Dictionary<BrickColor, GameObject> _prefabLookup;
     private bool _levelFailed;
     private bool _levelCompleted;
-    private bool _levelStarted; 
+    private bool _levelStarted;
+    private bool _inputLocked;
     private Construction _activeConstruction;
 
     protected override void Awake()
@@ -137,7 +138,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     /// </summary>
     public void HandleStandTapped(StandController stand)
     {
-        if (_levelFailed || _levelCompleted)
+        if (_inputLocked || _levelFailed || _levelCompleted)
         {
             return;
         }
@@ -339,6 +340,13 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         Debug.LogError("Temporary Zone overflow. Level failed.");
         LevelManager.Instance?.FailLevel();
     }
+
+    public void SetInputLocked(bool locked)
+    {
+        _inputLocked = locked;
+    }
+
+    public Construction ActiveConstruction => _activeConstruction;
 }
 
 [System.Serializable]
