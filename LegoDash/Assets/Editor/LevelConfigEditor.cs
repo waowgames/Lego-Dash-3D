@@ -6,6 +6,12 @@ using System.Linq;
 [CustomEditor(typeof(LevelConfig))]
 public class LevelConfigEditor : Editor
 {
+    private const int PreferredStandCount = 6;
+    private const int MinStandCount = 6;
+    private const int MaxStandCount = 10;
+    private const int MinBricksPerStand = 7;
+    private const int MaxBricksPerStand = 10;
+
     // Sabitler
     private const int TOTAL_STANDS = 16;
     private const int MAX_BRICKS_PER_STAND = 12;
@@ -35,6 +41,48 @@ public class LevelConfigEditor : Editor
         {
             GenerateLevel(config);
         }
+        GUI.backgroundColor = Color.white;
+
+        DrawConstructionAutoDistribution(config);
+    }
+
+    private void DrawConstructionAutoDistribution(LevelConfig config)
+    {
+        EditorGUILayout.Space(20);
+        EditorGUILayout.LabelField("Construction Bazlı Dağıtım", EditorStyles.boldLabel);
+
+        int existingStandCount = Mathf.Max(0, serializedObject.FindProperty("stands")?.arraySize ?? 0);
+        int preferredStandCount = Mathf.Clamp(existingStandCount > 0 ? existingStandCount : PreferredStandCount, MinStandCount, MaxStandCount);
+
+        if (!TryGetTotalBricks(config, out var totalBricks, out var rootDescription))
+        {
+            EditorGUILayout.HelpBox(rootDescription, MessageType.Warning);
+            EditorGUI.BeginDisabledGroup(true);
+            GUILayout.Button("Auto Distribute Bricks (From Construction)", GUILayout.Height(30));
+            EditorGUI.EndDisabledGroup();
+            return;
+        }
+
+        if (TryGetDistribution(totalBricks, MinBricksPerStand, MaxBricksPerStand, preferredStandCount, MinStandCount, MaxStandCount, out var previewDistribution))
+        {
+            EditorGUILayout.HelpBox(
+                $"Total Bricks: {totalBricks}\nStand Count: {previewDistribution.Count}\nPer Stand (min/max): {MinBricksPerStand}/{MaxBricksPerStand}\nDistribution: {string.Join(", ", previewDistribution)}",
+                MessageType.Info);
+        }
+        else
+        {
+            EditorGUILayout.HelpBox(
+                $"Total Bricks: {totalBricks}\nStand Count Preference: {preferredStandCount}\nPer Stand (min/max): {MinBricksPerStand}/{MaxBricksPerStand}\nUygun dağıtım bulunamadı. Tuğla sayısını veya stand sayısını ayarlayın.",
+                MessageType.Error);
+        }
+
+        GUI.backgroundColor = new Color(0.2f, 0.6f, 1f);
+        EditorGUI.BeginDisabledGroup(previewDistribution == null || previewDistribution.Count == 0);
+        if (GUILayout.Button("Auto Distribute Bricks (From Construction)", GUILayout.Height(30)))
+        {
+            AutoDistributeBricks(config, totalBricks, preferredStandCount);
+        }
+        EditorGUI.EndDisabledGroup();
         GUI.backgroundColor = Color.white;
     }
 
@@ -200,5 +248,164 @@ public class LevelConfigEditor : Editor
             list[k] = list[n];
             list[n] = value;
         }
+    }
+
+    private void AutoDistributeBricks(LevelConfig config, int totalBricks, int preferredStandCount)
+    {
+        if (!TryGetDistribution(totalBricks, MinBricksPerStand, MaxBricksPerStand, preferredStandCount, MinStandCount, MaxStandCount, out var distribution))
+        {
+            EditorUtility.DisplayDialog("Auto Distribution Failed", "Uygun dağıtım bulunamadı. Lütfen tuğla veya stand sayılarını kontrol edin.", "OK");
+            return;
+        }
+
+        Undo.RegisterCompleteObjectUndo(config, "Auto Distribute Bricks");
+
+        SerializedObject configSO = new SerializedObject(config);
+        SerializedProperty standsProp = configSO.FindProperty("stands");
+        standsProp.arraySize = distribution.Count;
+
+        for (int i = 0; i < distribution.Count; i++)
+        {
+            SerializedProperty standProp = standsProp.GetArrayElementAtIndex(i);
+            SerializedProperty bricksProp = standProp.FindPropertyRelative("bricks");
+            ApplyBrickCount(bricksProp, distribution[i]);
+        }
+
+        configSO.ApplyModifiedProperties();
+        EditorUtility.SetDirty(config);
+
+        Debug.Log($"Auto distribution completed. Total bricks: {totalBricks}, stands: {distribution.Count}. Distribution: {string.Join(", ", distribution)}");
+    }
+
+    private bool TryGetTotalBricks(LevelConfig config, out int totalBricks, out string description)
+    {
+        totalBricks = 0;
+
+        if (config == null)
+        {
+            description = "LevelConfig referansı bulunamadı.";
+            return false;
+        }
+
+        if (config.ConstructionPrefab == null)
+        {
+            description = "Construction Prefab atanmadı. Tuğla sayısı hesaplanamadı.";
+            return false;
+        }
+
+        SerializedObject constructionSO = new SerializedObject(config.ConstructionPrefab);
+        SerializedProperty rootOverrideProp = constructionSO.FindProperty("_builtObjectRootOverride");
+        Transform rootOverride = rootOverrideProp?.objectReferenceValue as Transform;
+
+        if (rootOverride == null)
+        {
+            description = "Construction içinde Build Object Root Override atanmadı. Tuğla dağıtımı yapılmadı.";
+            return false;
+        }
+
+        totalBricks = rootOverride.childCount;
+        description = $"BuildObjectRootOverride: {rootOverride.name} (Child Count: {totalBricks})";
+        return true;
+    }
+
+    private void ApplyBrickCount(SerializedProperty bricksProp, int desiredCount)
+    {
+        if (bricksProp == null)
+        {
+            return;
+        }
+
+        int existingCount = bricksProp.arraySize;
+        int fillValue = existingCount > 0 ? bricksProp.GetArrayElementAtIndex(0).enumValueIndex : 0;
+
+        // Remove extra bricks
+        for (int i = existingCount - 1; i >= desiredCount; i--)
+        {
+            bricksProp.DeleteArrayElementAtIndex(i);
+        }
+
+        // Add missing bricks
+        for (int i = bricksProp.arraySize; i < desiredCount; i++)
+        {
+            bricksProp.InsertArrayElementAtIndex(i);
+            bricksProp.GetArrayElementAtIndex(i).enumValueIndex = fillValue;
+        }
+    }
+
+    private bool TryGetDistribution(
+        int total,
+        int minPerStand,
+        int maxPerStand,
+        int preferredStandCount,
+        int minStandCount,
+        int maxStandCount,
+        out List<int> distribution)
+    {
+        distribution = null;
+
+        if (total <= 0 || minPerStand > maxPerStand || minStandCount > maxStandCount)
+        {
+            return false;
+        }
+
+        List<int> candidates = new List<int>();
+        for (int offset = 0; offset <= (maxStandCount - minStandCount); offset++)
+        {
+            int lower = preferredStandCount - offset;
+            int upper = preferredStandCount + offset;
+
+            if (lower >= minStandCount && !candidates.Contains(lower))
+            {
+                candidates.Add(lower);
+            }
+
+            if (upper <= maxStandCount && upper != lower && !candidates.Contains(upper))
+            {
+                candidates.Add(upper);
+            }
+        }
+
+        foreach (int standCount in candidates)
+        {
+            int minPossible = standCount * minPerStand;
+            int maxPossible = standCount * maxPerStand;
+
+            if (total < minPossible || total > maxPossible)
+            {
+                continue;
+            }
+
+            var candidateDistribution = new List<int>(standCount);
+            for (int i = 0; i < standCount; i++)
+            {
+                candidateDistribution.Add(minPerStand);
+            }
+
+            int remaining = total - minPossible;
+            bool progressed = true;
+
+            while (remaining > 0 && progressed)
+            {
+                progressed = false;
+
+                for (int i = 0; i < standCount && remaining > 0; i++)
+                {
+                    if (candidateDistribution[i] < maxPerStand)
+                    {
+                        candidateDistribution[i]++;
+                        remaining--;
+                        progressed = true;
+                    }
+                }
+            }
+
+            if (remaining == 0)
+            {
+                distribution = candidateDistribution;
+                return true;
+            }
+        }
+
+        return false;
     }
 }
