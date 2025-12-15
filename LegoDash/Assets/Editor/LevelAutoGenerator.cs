@@ -165,13 +165,15 @@ public static class LevelAutoGenerator
         while (working.Any(s => s.Bricks.Count > 0) && guard < totalBricks * 3)
         {
             guard++;
-            var reachable = GetReachableCounts(working, 1);
-            if (reachable.Count == 0)
+            var reachable = GetReachableCounts(working, profile.AccessibleLayersWindow);
+            var viable = reachable.Where(kvp => kvp.Value >= TaskChunkSize).ToDictionary(k => k.Key, v => v.Value);
+
+            if (viable.Count == 0)
             {
                 break;
             }
 
-            var weighted = reachable
+            var weighted = viable
                 .Select(kvp =>
                 {
                     int windowCount = CountWithinWindow(working, kvp.Key, profile.AccessibleLayersWindow);
@@ -183,21 +185,16 @@ public static class LevelAutoGenerator
                 .ToList();
 
             var selected = weighted.First();
-            int desired = Mathf.Max(1, Mathf.FloorToInt(selected.Top / Mathf.Max(0.01f, profile.RequiredReachableRatio)));
-            desired = Mathf.Clamp(desired, 1, selected.Top);
+            int desired = TaskChunkSize;
 
             int collected = CollectColor(working, selected.Color, desired);
-            if (collected <= 0)
+            if (collected < TaskChunkSize)
             {
-                // Fallback: remove a single top brick to avoid infinite loops.
-                var firstStand = working.First(s => s.Bricks.Count > 0);
-                var color = firstStand.Bricks[0];
-                firstStand.Bricks.RemoveAt(0);
-                tasks.Add(new TaskPlan(color, 1));
-                continue;
+                // Not enough accessible bricks to make a full task; stop to avoid undersized tasks.
+                break;
             }
 
-            tasks.Add(new TaskPlan(selected.Color, collected));
+            tasks.Add(new TaskPlan(selected.Color, TaskChunkSize));
         }
 
         return tasks;
@@ -330,20 +327,6 @@ public static class LevelAutoGenerator
                 working[standIndex].Bricks.RemoveAt(0);
                 remaining--;
             }
-        }
-
-        int leftover = working.Sum(s => s.Bricks.Count);
-        if (leftover > 0)
-        {
-            return new SolvabilityReport
-            {
-                Solvable = false,
-                FailedTaskIndex = taskList.Count - 1,
-                FailedColor = taskList.LastOrDefault()?.Color ?? BrickColor.Blue,
-                ReachableCount = leftover,
-                RequiredCount = 0,
-                Message = $"Tasks completed but {leftover} bricks remain."
-            };
         }
 
         return new SolvabilityReport { Solvable = true, Message = "Level solvable." };

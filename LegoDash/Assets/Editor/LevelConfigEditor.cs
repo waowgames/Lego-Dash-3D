@@ -149,9 +149,11 @@ public class LevelConfigEditor : Editor
         }
         while (!solvableReport.Solvable && attempt < 100);
 
-        if (!solvableReport.Solvable)
+        if (!solvableReport.Solvable || tasks.Count == 0)
         {
-            _lastValidationMessage = solvableReport.Message;
+            _lastValidationMessage = solvableReport.Solvable
+                ? "No solvable 9-brick tasks could be generated from the current layout."
+                : solvableReport.Message;
             return;
         }
 
@@ -206,29 +208,16 @@ public class LevelConfigEditor : Editor
 
     private void ApplyTasks(SerializedProperty tasksProp, List<LevelAutoGenerator.TaskPlan> tasks)
     {
-        var brickSequence = new List<BrickColor>();
-        foreach (var task in tasks)
+        // Tasks in runtime always expect 9 bricks of a single color, so write exactly one entry per plan
+        // and trust solvability builder to only emit full-sized tasks.
+        tasksProp.arraySize = Mathf.Max(1, tasks.Count);
+
+        for (int i = 0; i < tasksProp.arraySize; i++)
         {
-            brickSequence.AddRange(Enumerable.Repeat(task.Color, Mathf.Max(0, task.RequiredCount)));
-        }
-
-        int taskCount = Mathf.CeilToInt(brickSequence.Count / (float)LevelAutoGenerator.TaskChunkSize);
-        tasksProp.arraySize = Mathf.Max(1, taskCount);
-
-        for (int i = 0; i < taskCount; i++)
-        {
-            int start = i * LevelAutoGenerator.TaskChunkSize;
-            int length = Mathf.Min(LevelAutoGenerator.TaskChunkSize, brickSequence.Count - start);
-            var slice = brickSequence.Skip(start).Take(length).ToList();
-            var dominantColor = slice
-                .GroupBy(c => c)
-                .OrderByDescending(g => g.Count())
-                .ThenBy(g => g.Key)
-                .FirstOrDefault()?.Key ?? BrickColor.Blue;
-
+            var task = tasks[Mathf.Min(i, tasks.Count - 1)];
             var taskProp = tasksProp.GetArrayElementAtIndex(i);
             var colorProp = taskProp.FindPropertyRelative("color");
-            colorProp.enumValueIndex = (int)dominantColor;
+            colorProp.enumValueIndex = (int)task.Color;
         }
     }
 
