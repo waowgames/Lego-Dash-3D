@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 /// <summary>
@@ -10,11 +11,20 @@ public class StandController : MonoBehaviour
     [SerializeField]
     private Transform _brickParent;
 
+    [Header("Model")]
+    [Tooltip("Standın model temsilcisi. Atamayı sahneden yapın.")]
+    [SerializeField]
+    private Transform _model;
+
+    [SerializeField]
+    private float _modelScaleDuration = 0.25f;
+
     [Tooltip("Vertical spacing applied between bricks when building the stand.")]
     [SerializeField]
     private float _brickHeightSpacing = 0.25f;
 
     private readonly List<Brick> _bricks = new();
+    private Tween _modelScaleTween;
 
     /// <summary>
     /// Builds the stand using the provided brick colors and prefab mapping.
@@ -35,6 +45,8 @@ public class StandController : MonoBehaviour
             _bricks.Add(new Brick(color, instance));
             PositionBrick(instance.transform, _bricks.Count - 1);
         }
+
+        UpdateModelScale(false);
     }
 
     /// <summary>
@@ -72,6 +84,8 @@ public class StandController : MonoBehaviour
 
         // Preserve original top-first order for downstream systems.
         result.Reverse();
+
+        UpdateModelScale(_bricks.Count == 0);
         return result;
     }
 
@@ -99,6 +113,8 @@ public class StandController : MonoBehaviour
 
             _bricks.Add(brick);
         }
+
+        UpdateModelScale(true);
     }
 
     /// <summary>
@@ -115,6 +131,8 @@ public class StandController : MonoBehaviour
         }
 
         _bricks.Clear();
+
+        UpdateModelScale(false);
     }
 
     public int BrickCount => _bricks.Count;
@@ -125,6 +143,14 @@ public class StandController : MonoBehaviour
         if (GameManager.Instance != null)
         {
             GameManager.Instance.HandleStandTapped(this);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (_modelScaleTween != null && _modelScaleTween.IsActive())
+        {
+            _modelScaleTween.Kill();
         }
     }
 
@@ -140,5 +166,29 @@ public class StandController : MonoBehaviour
 
         // Lower indices are closer to the base, last index represents the top-most brick.
         brickTransform.localPosition = Vector3.up * (_brickHeightSpacing * index);
+    }
+
+    private void UpdateModelScale(bool animate)
+    {
+        if (_model == null)
+        {
+            return;
+        }
+
+        var targetScale = _bricks.Count > 0 ? Vector3.one : Vector3.zero;
+
+        if (_modelScaleTween != null && _modelScaleTween.IsActive())
+        {
+            _modelScaleTween.Kill();
+        }
+
+        if (animate)
+        {
+            _modelScaleTween = _model.DOScale(targetScale, _modelScaleDuration);
+        }
+        else
+        {
+            _model.localScale = targetScale;
+        }
     }
 }
