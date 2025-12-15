@@ -140,6 +140,7 @@ public class LevelConfigEditor : Editor
         List<LevelAutoGenerator.TaskPlan> tasks = null;
         LevelAutoGenerator.SolvabilityReport solvableReport;
         int attempt = 0;
+        int potentialTasks = LevelAutoGenerator.CountPotentialTasks(stands);
 
         do
         {
@@ -147,7 +148,7 @@ public class LevelConfigEditor : Editor
             solvableReport = LevelAutoGenerator.SolvabilityCheck(stands, tasks, difficulty);
             attempt++;
         }
-        while (!solvableReport.Solvable && attempt < 100);
+        while ((!solvableReport.Solvable || tasks.Count < potentialTasks) && attempt < 100);
 
         if (!solvableReport.Solvable || tasks.Count == 0)
         {
@@ -155,6 +156,11 @@ public class LevelConfigEditor : Editor
                 ? "No solvable 9-brick tasks could be generated from the current layout."
                 : solvableReport.Message;
             return;
+        }
+
+        if (tasks.Count < potentialTasks)
+        {
+            _lastValidationMessage = $"Generated {tasks.Count} / {potentialTasks} possible tasks while keeping solvable.";
         }
 
         Undo.RegisterCompleteObjectUndo(config, "Auto Generate Level");

@@ -151,53 +151,51 @@ public static class LevelAutoGenerator
         }
     }
 
-    public static List<TaskPlan> BuildSolvableTasks(IEnumerable<StandPlan> sourceStands, LevelDifficulty difficulty, System.Random rng)
+    public static List<TaskPlan> BuildSolvableTasks(List<StandPlan> stands, LevelDifficulty difficulty, System.Random rng)
     {
         var profile = GetDifficultyProfile(difficulty);
-        var working = sourceStands
-            .Select(s => new StandPlan { Bricks = new List<BrickColor>(s.Bricks) })
-            .ToList();
-
-        var tasks = new List<TaskPlan>();
-        int totalBricks = working.Sum(s => s.Bricks.Count);
-        int guard = 0;
-
-        while (working.Any(s => s.Bricks.Count > 0) && guard < totalBricks * 3)
+        var batches = CountTaskBatches(stands);
+        if (batches.Count == 0)
         {
-            guard++;
-            var reachable = GetReachableCounts(working, profile.AccessibleLayersWindow);
-            var viable = reachable.Where(kvp => kvp.Value >= TaskChunkSize).ToDictionary(k => k.Key, v => v.Value);
-
-            if (viable.Count == 0)
-            {
-                break;
-            }
-
-            var weighted = viable
-                .Select(kvp =>
-                {
-                    int windowCount = CountWithinWindow(working, kvp.Key, profile.AccessibleLayersWindow);
-                    float score = kvp.Value + windowCount * profile.PriorityStrength;
-                    return (Color: kvp.Key, Score: score, Top: kvp.Value);
-                })
-                .OrderByDescending(item => item.Score)
-                .ThenBy(item => rng?.NextDouble() ?? UnityEngine.Random.value)
-                .ToList();
-
-            var selected = weighted.First();
-            int desired = TaskChunkSize;
-
-            int collected = CollectColor(working, selected.Color, desired);
-            if (collected < TaskChunkSize)
-            {
-                // Not enough accessible bricks to make a full task; stop to avoid undersized tasks.
-                break;
-            }
-
-            tasks.Add(new TaskPlan(selected.Color, TaskChunkSize));
+            return new List<TaskPlan>();
         }
 
-        return tasks;
+        var priorities = RankColorsByExposure(stands, batches.Keys, profile, rng);
+
+        List<TaskPlan> bestTasks = null;
+        List<StandPlan> bestLayout = null;
+
+        for (int attempt = 0; attempt < 40; attempt++)
+        {
+            var aligned = AlignStandsToPriorities(stands, priorities, profile, rng);
+            var (tasks, completed) = BuildSequentialPlan(aligned, batches);
+
+            if (bestTasks == null || tasks.Count > bestTasks.Count)
+            {
+                bestTasks = tasks;
+                bestLayout = aligned.Select(s => new StandPlan { Bricks = new List<BrickColor>(s.Bricks) }).ToList();
+            }
+
+            if (completed)
+            {
+                break;
+            }
+
+            // Shuffle priorities slightly to search for a better alignment.
+            priorities = priorities
+                .OrderBy(_ => rng?.NextDouble() ?? UnityEngine.Random.value)
+                .ToList();
+        }
+
+        if (bestLayout != null)
+        {
+            for (int i = 0; i < stands.Count && i < bestLayout.Count; i++)
+            {
+                stands[i].Bricks = bestLayout[i].Bricks;
+            }
+        }
+
+        return bestTasks ?? new List<TaskPlan>();
     }
 
     public static ValidationResult ValidateStand(LevelDifficulty difficulty, IReadOnlyList<BrickColor> bricks, int standIndex)
@@ -355,6 +353,104 @@ public static class LevelAutoGenerator
                 PriorityStrength = 0.2f,
             },
         };
+    }
+
+    private static Dictionary<BrickColor, int> CountTaskBatches(IEnumerable<StandPlan> stands)
+    {
+        return stands
+            .SelectMany(s => s.Bricks)
+            .GroupBy(c => c)
+            .Select(g => (Color: g.Key, Batches: g.Count() / TaskChunkSize))
+            .Where(entry => entry.Batches > 0)
+            .ToDictionary(e => e.Color, e => e.Batches);
+    }
+
+    public static int CountPotentialTasks(IEnumerable<StandPlan> stands)
+    {
+        return CountTaskBatches(stands).Values.Sum();
+    }
+
+    private static List<BrickColor> RankColorsByExposure(IEnumerable<StandPlan> stands, IEnumerable<BrickColor> colors, DifficultyProfile profile, System.Random rng)
+    {
+        return colors
+            .Select(color =>
+            {
+                int top = CountWithinWindow(stands, color, 1);
+                int window = CountWithinWindow(stands, color, profile.AccessibleLayersWindow);
+                float score = top * 2f + window * profile.PriorityStrength;
+                return (Color: color, Score: score + (float)(rng?.NextDouble() ?? UnityEngine.Random.value) * 0.1f);
+            })
+            .OrderByDescending(item => item.Score)
+            .Select(item => item.Color)
+            .ToList();
+    }
+
+    private static List<StandPlan> AlignStandsToPriorities(List<StandPlan> stands, List<BrickColor> priorities, DifficultyProfile profile, System.Random rng)
+    {
+        float randomness = profile.PriorityStrength switch
+        {
+            <= 0.3f => 0.3f,
+            <= 0.5f => 0.2f,
+            _ => 0.1f,
+        };
+
+        var priorityIndex = priorities
+            .Select((color, index) => (color, index))
+            .ToDictionary(pair => pair.color, pair => pair.index);
+
+        var aligned = new List<StandPlan>(stands.Count);
+        foreach (var stand in stands)
+        {
+            var reordered = stand.Bricks
+                .Select((brick, idx) =>
+                {
+                    int rank = priorityIndex.TryGetValue(brick, out var p) ? p : priorities.Count + 1;
+                    float noise = (float)(rng?.NextDouble() ?? UnityEngine.Random.value) * randomness;
+                    return (Brick: brick, Weight: rank + noise + idx * 0.01f);
+                })
+                .OrderBy(item => item.Weight)
+                .Select(item => item.Brick)
+                .ToList();
+
+            aligned.Add(new StandPlan { Bricks = reordered });
+        }
+
+        return aligned;
+    }
+
+    private static (List<TaskPlan> Tasks, bool CompletedAll) BuildSequentialPlan(List<StandPlan> aligned, Dictionary<BrickColor, int> batches)
+    {
+        var remaining = batches.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        var working = aligned.Select(s => new StandPlan { Bricks = new List<BrickColor>(s.Bricks) }).ToList();
+        var tasks = new List<TaskPlan>();
+
+        while (remaining.Any(kvp => kvp.Value > 0))
+        {
+            var accessible = GetReachableCounts(working, 1);
+            var candidates = remaining
+                .Where(kvp => kvp.Value > 0 && accessible.TryGetValue(kvp.Key, out var count) && count >= TaskChunkSize)
+                .OrderByDescending(kvp => accessible[kvp.Key])
+                .ThenBy(kvp => kvp.Key)
+                .ToList();
+
+            if (candidates.Count == 0)
+            {
+                break;
+            }
+
+            var color = candidates.First().Key;
+            int collected = CollectColor(working, color, TaskChunkSize);
+            if (collected < TaskChunkSize)
+            {
+                break;
+            }
+
+            tasks.Add(new TaskPlan(color, TaskChunkSize));
+            remaining[color]--;
+        }
+
+        bool completed = remaining.All(kvp => kvp.Value == 0);
+        return (tasks, completed);
     }
 
     private static int CollectColor(List<StandPlan> stands, BrickColor color, int desired)
