@@ -31,9 +31,7 @@ public class TaskCarManager : MonoBehaviour
     [Header("Task Setup")]
     [SerializeField, Min(1)]
     private int _bricksPerTask = 9;
-
-    [Header("Construction")]
-    [SerializeField]
+    
     private Construction _construction;
 
     [Header("Completed Car Exit")]
