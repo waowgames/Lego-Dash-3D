@@ -461,6 +461,21 @@ MonoBehaviour:
     Prefab: {fileID: 4746216671055761064, guid: 29343560241d3bb4eb72985d41f36d76, type: 3}
   - Color: 6
     Prefab: {fileID: 4746216671055761064, guid: 55dfa76d4f3aa6f4aa54f0f7091f74bc, type: 3}
+  _taskCarPrefabs:
+  - Color: 0
+    Prefab: {fileID: 1054111592112900511, guid: d0b93465bff7b4926b14059efd72fe14, type: 3}
+  - Color: 4
+    Prefab: {fileID: 8892354241317202336, guid: eaf3ccebda01b49008a0b64e8bdb1b56, type: 3}
+  - Color: 6
+    Prefab: {fileID: 2170911970604587970, guid: 9cc3b4cd6f44141f1bf5b5bc05dfc019, type: 3}
+  - Color: 5
+    Prefab: {fileID: 7539261658765537520, guid: f830c542ed683457fbe8983323438746, type: 3}
+  - Color: 3
+    Prefab: {fileID: 5700441738521979650, guid: 8bc79446e32874e1c84e240d2828bd7a, type: 3}
+  - Color: 1
+    Prefab: {fileID: 590128842450334646, guid: 0efe4dc9d949b407386f54fd31df2e6c, type: 3}
+  - Color: 2
+    Prefab: {fileID: 2609571578384480503, guid: 8d9e6b5907c524114b4653bff81065e6, type: 3}
   _initialLevelConfig: {fileID: 11400000, guid: 27d20ad96aa731646be1cb00305d8b6b, type: 2}
   _startLevelOnStart: 1
 --- !u!4 &265664889
@@ -633,7 +648,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 12
+  orthographic size: 6.5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -657,8 +672,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
-  m_LocalPosition: {x: 0.98, y: 11.87, z: -12.5}
+  m_LocalRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
+  m_LocalPosition: {x: 0.98, y: 9.8, z: -5.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
