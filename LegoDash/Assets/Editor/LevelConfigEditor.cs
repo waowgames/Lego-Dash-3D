@@ -1,204 +1,293 @@
-using UnityEngine;
-using UnityEditor;
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
+using UnityEngine;
 
 [CustomEditor(typeof(LevelConfig))]
 public class LevelConfigEditor : Editor
 {
-    // Sabitler
-    private const int TOTAL_STANDS = 16;
-    private const int MAX_BRICKS_PER_STAND = 12;
-    private const int MIN_CHUNK_SIZE = 2;
-    private const int MAX_CHUNK_SIZE = 5;
+    private const int StandMin = 6;
+    private const int StandMax = 10;
+    private const int TaskChunkSize = 9;
+
+    private int _totalBricksInput;
+    private LevelDifficulty _difficulty = LevelDifficulty.Easy;
+    private string _lastValidationMessage;
+    private List<LevelAutoGenerator.TaskPlan> _previewTasks = new();
+    private List<int> _previewStandCounts = new();
+    private IReadOnlyList<BrickColor> _previewColors = new List<BrickColor>();
+
+    private void OnEnable()
+    {
+        var config = (LevelConfig)target;
+
+        if (_totalBricksInput <= 0 && TryGetConstructionChildCount(config, out var childCount))
+        {
+            _totalBricksInput = childCount - (childCount % TaskChunkSize);
+        }
+
+        UpdatePreview(config);
+    }
 
     public override void OnInspectorGUI()
     {
-        // Mevcut Inspector'ı çiz (Manuel ayarlar için)
         DrawDefaultInspector();
 
-        LevelConfig config = (LevelConfig)target;
+        EditorGUILayout.Space(20);
+        DrawAutoGenerator();
+    }
 
-        GUILayout.Space(20);
-        EditorGUILayout.LabelField("Otomatik Level Oluşturucu", EditorStyles.boldLabel);
-        
-        // Bilgilendirme Kutusu
-        if (config.Tasks.Count > 0)
+    private void DrawAutoGenerator()
+    {
+        var config = (LevelConfig)target;
+
+        EditorGUILayout.LabelField("Auto Level Generator", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox(
+            "Enter TotalBricks (must be divisible by 9) and a difficulty preset. The generator will synchronize tasks and stand stacks so that every brick is consumed when the level ends.",
+            MessageType.Info);
+
+        using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
         {
-            int totalBricksNeeded = config.Tasks.Count * 9; // Her task sabit 9 brick
-            string info = $"Task Sayısı: {config.Tasks.Count}\nToplam Tuğla: {totalBricksNeeded}\n(Stand Kapasitesi: {TOTAL_STANDS * MAX_BRICKS_PER_STAND})";
-            EditorGUILayout.HelpBox(info, MessageType.Info);
+            EditorGUI.BeginChangeCheck();
+            _totalBricksInput = EditorGUILayout.IntField("Total Bricks", _totalBricksInput);
+            _difficulty = (LevelDifficulty)EditorGUILayout.EnumPopup("Difficulty", _difficulty);
+            if (EditorGUI.EndChangeCheck())
+            {
+                UpdatePreview(config);
+            }
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("Sync TotalBricks from Construction Child Count"))
+                {
+                    SyncTotalBricksFromConstruction(config);
+                }
+
+                EditorGUI.BeginDisabledGroup(!IsInputValid(config, _totalBricksInput, out _lastValidationMessage));
+                if (GUILayout.Button("Generate Level (Tasks + Stands)", GUILayout.Height(28)))
+                {
+                    GenerateLevel(config);
+                }
+                EditorGUI.EndDisabledGroup();
+            }
+
+            if (!string.IsNullOrEmpty(_lastValidationMessage))
+            {
+                var type = DetermineMessageType(config);
+                EditorGUILayout.HelpBox(_lastValidationMessage, type);
+            }
+
+            DrawPreview();
+        }
+    }
+
+    private void DrawPreview()
+    {
+        if (_previewColors == null || _previewColors.Count == 0 || _previewStandCounts == null || _previewStandCounts.Count == 0)
+        {
+            return;
         }
 
-        GUI.backgroundColor = new Color(0.2f, 0.8f, 0.2f); // Yeşil buton
-        if (GUILayout.Button("Leveli Otomatik Dağıt (Auto Generate)", GUILayout.Height(40)))
+        EditorGUILayout.LabelField("Preview", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField($"Stands: {_previewStandCounts.Count}  |  Total: {_previewStandCounts.Sum()}  |  Difficulty: {_difficulty}");
+        EditorGUILayout.LabelField("Per Stand Brick Counts:", string.Join(", ", _previewStandCounts));
+        EditorGUILayout.LabelField("Colors:", string.Join(", ", _previewColors.Select(c => c.ToString())));
+
+        if (_previewTasks != null && _previewTasks.Count > 0)
         {
-            GenerateLevel(config);
+            EditorGUILayout.LabelField("Tasks (index : color x bricks):");
+            for (int i = 0; i < _previewTasks.Count; i++)
+            {
+                var task = _previewTasks[i];
+                EditorGUILayout.LabelField($"  {i + 1}. {task.Color} x {task.RequiredCount}");
+            }
         }
-        GUI.backgroundColor = Color.white;
+    }
+
+    private void SyncTotalBricksFromConstruction(LevelConfig config)
+    {
+        if (!TryGetConstructionChildCount(config, out var childCount))
+        {
+            _lastValidationMessage = "Construction BuildObjectRootOverride is missing.";
+            return;
+        }
+
+        if (childCount % TaskChunkSize != 0)
+        {
+            _lastValidationMessage = $"Child count ({childCount}) is not divisible by 9. Please adjust the construction pieces.";
+            return;
+        }
+
+        _totalBricksInput = childCount;
+        _lastValidationMessage = $"TotalBricks synced to {childCount} from construction child count.";
+        UpdatePreview(config);
+    }
+
+    private bool IsInputValid(LevelConfig config, int totalBricks, out string message)
+    {
+        if (config == null)
+        {
+            message = "No LevelConfig selected.";
+            return false;
+        }
+
+        if (totalBricks <= 0)
+        {
+            message = "TotalBricks must be greater than zero.";
+            return false;
+        }
+
+        if (totalBricks % TaskChunkSize != 0)
+        {
+            message = "TotalBricks must be divisible by 9.";
+            return false;
+        }
+
+        if (!TryGetConstructionChildCount(config, out var childCount))
+        {
+            message = "Construction BuildObjectRootOverride is missing.";
+            return false;
+        }
+
+        if (childCount != totalBricks)
+        {
+            message = $"TotalBricks ({totalBricks}) does not match construction child count ({childCount}). Use Sync to align.";
+            return false;
+        }
+
+        message = "";
+        return true;
     }
 
     private void GenerateLevel(LevelConfig config)
     {
-        // İşlemi geri alınabilir yap (Ctrl+Z için)
-        Undo.RecordObject(config, "Auto Generate Level");
-
-        // 1. Önce Stand listesini temizle ve 16 boş stand oluştur
-        // SerializedObject kullanarak private alanlara güvenli erişim sağlıyoruz
-        SerializedObject so = new SerializedObject(config);
-        SerializedProperty standsProp = so.FindProperty("stands");
-        
-        standsProp.ClearArray();
-        for (int i = 0; i < TOTAL_STANDS; i++)
+        if (!IsInputValid(config, _totalBricksInput, out var validation))
         {
-            standsProp.InsertArrayElementAtIndex(i);
-            // Yeni oluşturulan standın içindeki listeyi de temizlememiz gerekebilir (Unity bazen eski veriyi tutar)
-            SerializedProperty standElement = standsProp.GetArrayElementAtIndex(i);
-            SerializedProperty bricksProp = standElement.FindPropertyRelative("bricks");
-            bricksProp.ClearArray();
+            _lastValidationMessage = validation;
+            return;
         }
 
-        // 2. Tüm Tasklar için tuğla gruplarını (Chunks) hazırla
-        List<List<BrickColor>> allChunks = new List<List<BrickColor>>();
+        UpdatePreview(config);
 
-        foreach (var task in config.Tasks)
-        {
-            // Senin kodundaki sabit 9 değerini baz alıyoruz
-            int countToDistribute = task.RequiredCount; 
-            BrickColor color = task.Color;
+        Undo.RegisterCompleteObjectUndo(config, "Generate Level (Tasks + Stands)");
 
-            // 9 Adedi 2-5'lik parçalara böl
-            List<int> splits = CalculateChunks(countToDistribute);
+        var so = new SerializedObject(config);
+        var tasksProp = so.FindProperty("tasks");
+        var standsProp = so.FindProperty("stands");
 
-            foreach (int splitSize in splits)
-            {
-                List<BrickColor> chunk = new List<BrickColor>();
-                for (int k = 0; k < splitSize; k++) chunk.Add(color);
-                allChunks.Add(chunk);
-            }
-        }
+        ApplyTasks(tasksProp, _previewTasks);
+        ApplyStands(standsProp, _previewStandCounts);
 
-        // 3. Grupları karıştır (Rastgelelik için)
-        Shuffle(allChunks);
-
-        // 4. Stantlara Dağıtım Algoritması
-        DistributeToStands(standsProp, allChunks);
-
-        // Değişiklikleri kaydet
         so.ApplyModifiedProperties();
-        Debug.Log($"<color=green>Level Başarıyla Oluşturuldu!</color> {allChunks.Count} parça {TOTAL_STANDS} standa dağıtıldı.");
+        EditorUtility.SetDirty(config);
+
+        _lastValidationMessage = "Level generated successfully.";
     }
 
-    // 9 sayısını 2 ile 5 arasında mantıklı parçalara böler (Örn: 5+4, 3+3+3)
-    private List<int> CalculateChunks(int total)
+    private void ApplyTasks(SerializedProperty tasksProp, List<LevelAutoGenerator.TaskPlan> tasks)
     {
-        List<int> chunks = new List<int>();
-        int remaining = total;
+        int taskCount = tasks.Sum(t => t.RequiredCount) / TaskChunkSize;
+        tasksProp.arraySize = taskCount;
 
-        while (remaining > 0)
+        int index = 0;
+        foreach (var task in tasks)
         {
-            // Rastgele bir boyut seç (2 ile 5 arası)
-            // Ancak kalan miktardan büyük olamaz.
-            int maxTake = Mathf.Min(MAX_CHUNK_SIZE, remaining);
-            
-            // Eğer kalan sayı çok küçükse (örneğin 2 kaldıysa) direkt onu almalıyız
-            int take = (remaining < MIN_CHUNK_SIZE) ? remaining : Random.Range(MIN_CHUNK_SIZE, maxTake + 1);
+            int repetitions = Mathf.Max(1, task.RequiredCount / TaskChunkSize);
 
-            // ÖNEMLİ KONTROL: Eğer bu seçimden sonra geriye 1 kalacaksa, bu yasak (min 2 istiyoruz).
-            // O zaman 'take' miktarını 1 azaltarak geriye 2 kalmasını sağlarız.
-            if (remaining - take == 1)
+            for (int r = 0; r < repetitions; r++)
             {
-                take--;
-            }
-
-            // Güvenlik: Eğer take 1'e düştüyse (yukarıdaki azaltmadan dolayı), mecburen son chunk'a ekleme yapacağız.
-            // Ama 9 sayısı için (5+4, 4+5, 3+3+3, 3+2+2+2) gibi kombinasyonlarda genelde sorun çıkmaz.
-            // Yine de matematiksel garanti için:
-            if (take < MIN_CHUNK_SIZE && chunks.Count > 0)
-            {
-                // Son eklenen parçayı büyüt
-                chunks[chunks.Count - 1] += take;
-            }
-            else
-            {
-                chunks.Add(take);
-            }
-
-            remaining -= take;
-        }
-        return chunks;
-    }
-
-    private void DistributeToStands(SerializedProperty standsProp, List<List<BrickColor>> allChunks)
-    {
-        // Basit ve etkili bir dağıtım:
-        // Önce her standı mümkün olduğunca doldurmaya çalışalım (4-9 arası kuralı için).
-        
-        foreach (var chunk in allChunks)
-        {
-            bool placed = false;
-            int attempts = 0;
-            
-            // Rastgele bir stand bulup içine koymayı dene
-            while (!placed && attempts < 50)
-            {
-                int randIndex = Random.Range(0, TOTAL_STANDS);
-                SerializedProperty stand = standsProp.GetArrayElementAtIndex(randIndex);
-                SerializedProperty bricks = stand.FindPropertyRelative("bricks");
-
-                // Eğer bu standa eklersek 9'u geçiyor mu?
-                if (bricks.arraySize + chunk.Count <= MAX_BRICKS_PER_STAND)
-                {
-                    AddChunkToStand(bricks, chunk);
-                    placed = true;
-                }
-                attempts++;
-            }
-
-            // Rastgele bulamadıysa sırayla boş yer ara
-            if (!placed)
-            {
-                for (int i = 0; i < TOTAL_STANDS; i++)
-                {
-                    SerializedProperty stand = standsProp.GetArrayElementAtIndex(i);
-                    SerializedProperty bricks = stand.FindPropertyRelative("bricks");
-
-                    if (bricks.arraySize + chunk.Count <= MAX_BRICKS_PER_STAND)
-                    {
-                        AddChunkToStand(bricks, chunk);
-                        placed = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!placed)
-            {
-                Debug.LogError($"HATA: '{chunk[0]}' rengi için yer bulunamadı! Stantlar çok dolu. Task sayısını azaltmalısın.");
+                var taskProp = tasksProp.GetArrayElementAtIndex(index++);
+                var colorProp = taskProp.FindPropertyRelative("color");
+                colorProp.enumValueIndex = (int)task.Color;
             }
         }
     }
 
-    private void AddChunkToStand(SerializedProperty bricksProp, List<BrickColor> chunk)
+    private void ApplyStands(SerializedProperty standsProp, List<int> standCounts)
     {
-        foreach (var color in chunk)
+        var colors = _previewColors;
+        var tasks = _previewTasks;
+        var standPlans = LevelAutoGenerator.BuildStandStacks(_difficulty, standCounts, tasks, colors);
+
+        standsProp.arraySize = standPlans.Count;
+
+        for (int i = 0; i < standPlans.Count; i++)
         {
-            int index = bricksProp.arraySize;
-            bricksProp.InsertArrayElementAtIndex(index);
-            bricksProp.GetArrayElementAtIndex(index).enumValueIndex = (int)color;
+            var standProp = standsProp.GetArrayElementAtIndex(i);
+            var bricksProp = standProp.FindPropertyRelative("bricks");
+            bricksProp.arraySize = standPlans[i].Bricks.Count;
+
+            for (int b = 0; b < standPlans[i].Bricks.Count; b++)
+            {
+                bricksProp.GetArrayElementAtIndex(b).enumValueIndex = (int)standPlans[i].Bricks[b];
+            }
         }
     }
 
-    private void Shuffle<T>(List<T> list)
+    private void UpdatePreview(LevelConfig config)
     {
-        int n = list.Count;
-        while (n > 1)
+        if (!IsInputValid(config, _totalBricksInput, out var validation))
         {
-            n--;
-            int k = Random.Range(0, n + 1);
-            T value = list[k];
-            list[k] = list[n];
-            list[n] = value;
+            _lastValidationMessage = validation;
+            return;
         }
+
+        _previewColors = LevelAutoGenerator.GenerateColorSet(_difficulty, _totalBricksInput);
+        int preferredStandCount = Mathf.Clamp(config.Stands != null ? config.Stands.Count : StandMin, StandMin, StandMax);
+        _previewStandCounts = LevelAutoGenerator.GenerateStandCounts(_difficulty, _totalBricksInput, preferredStandCount);
+        var quotas = LevelAutoGenerator.GenerateColorQuotas(_difficulty, _totalBricksInput, _previewColors);
+        _previewTasks = LevelAutoGenerator.GenerateTasks(_difficulty, new Dictionary<BrickColor, int>(quotas));
+
+        int taskSum = _previewTasks.Sum(t => t.RequiredCount);
+        int standSum = _previewStandCounts.Sum();
+
+        if (taskSum != _totalBricksInput || standSum != _totalBricksInput)
+        {
+            _lastValidationMessage = $"Internal mismatch detected (tasks: {taskSum}, stands: {standSum}).";
+        }
+        else
+        {
+            _lastValidationMessage = "Preview ready.";
+        }
+    }
+
+    private MessageType DetermineMessageType(LevelConfig config)
+    {
+        if (!IsInputValid(config, _totalBricksInput, out _))
+        {
+            return MessageType.Error;
+        }
+
+        if (!string.IsNullOrEmpty(_lastValidationMessage) && _lastValidationMessage.ToLower().Contains("mismatch"))
+        {
+            return MessageType.Error;
+        }
+
+        return MessageType.Info;
+    }
+
+    private bool TryGetConstructionChildCount(LevelConfig config, out int childCount)
+    {
+        childCount = 0;
+
+        if (config == null || config.ConstructionPrefab == null)
+        {
+            return false;
+        }
+
+        var constructionSO = new SerializedObject(config.ConstructionPrefab);
+        var rootProp = constructionSO.FindProperty("_builtObjectRootOverride");
+        var root = rootProp?.objectReferenceValue as Transform;
+
+        if (root == null)
+        {
+            return false;
+        }
+
+        childCount = root.childCount;
+        return true;
     }
 }
+
+#endif
