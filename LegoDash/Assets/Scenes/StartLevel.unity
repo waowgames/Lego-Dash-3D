@@ -1307,7 +1307,6 @@ MonoBehaviour:
   _convoyMoveEase: 9
   _recycleCompletedCars: 0
   _bricksPerTask: 9
-  _construction: {fileID: 0}
   _completedTravelDistance: 10
   _completedTravelDuration: 0.5
   _completedTravelEase: 9
@@ -2472,6 +2471,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[0]'
+      value: 
+      objectReference: {fileID: 11400000, guid: d110c26f23b442a4c8939b0a5efd8905, type: 2}
     - target: {fileID: 7303356749682882291, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: m_Name
       value: UI Manager
