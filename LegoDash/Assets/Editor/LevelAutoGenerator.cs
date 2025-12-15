@@ -15,6 +15,7 @@ public static class LevelAutoGenerator
     private const int MinStandCount = 6;
     private const int MaxStandCount = 10;
     private const int MinBricksPerStand = 7;
+    private const int MaxBricksPerStand = 10;
     private static readonly BrickColor[] Palette = new[]
     {
         BrickColor.Blue,
@@ -60,7 +61,10 @@ public static class LevelAutoGenerator
     {
         int standCount = Mathf.Clamp(preferredStandCount, MinStandCount, MaxStandCount);
 
-        while (standCount < MaxStandCount && totalBricks / standCount > 18)
+        int minStandCountForCapacity = Mathf.CeilToInt((float)totalBricks / Mathf.Max(1, MaxBricksPerStand));
+        standCount = Mathf.Clamp(Mathf.Max(standCount, minStandCountForCapacity), MinStandCount, MaxStandCount);
+
+        while (standCount < MaxStandCount && totalBricks / standCount > MaxBricksPerStand)
         {
             standCount++;
         }
@@ -243,7 +247,8 @@ public static class LevelAutoGenerator
 
         for (int i = 0; i < standCount; i++)
         {
-            int count = Mathf.Max(MinBricksPerStand, Mathf.FloorToInt(totalBricks * (weights[i] / weightSum)));
+            int count = Mathf.FloorToInt(totalBricks * (weights[i] / weightSum));
+            count = Mathf.Clamp(count, MinBricksPerStand, MaxBricksPerStand);
             distribution.Add(count);
             allocated += count;
         }
@@ -251,26 +256,43 @@ public static class LevelAutoGenerator
         int remainder = totalBricks - allocated;
         var order = Enumerable.Range(0, standCount)
             .OrderByDescending(i => weights[i])
-            .ThenBy(i => i);
-
-        foreach (int index in order)
-        {
-            if (remainder <= 0)
-            {
-                break;
-            }
-
-            distribution[index]++;
-            remainder--;
-        }
+            .ThenBy(i => i)
+            .ToList();
 
         int cursor = 0;
-        while (remainder > 0)
+        int safety = 0;
+        while (remainder > 0 && order.Count > 0 && safety < standCount * standCount)
+        {
+            int index = order[cursor % order.Count];
+            int available = MaxBricksPerStand - distribution[index];
+
+            if (available > 0)
+            {
+                int add = Mathf.Min(available, remainder);
+                distribution[index] += add;
+                remainder -= add;
+            }
+
+            cursor++;
+            safety++;
+        }
+
+        cursor = 0;
+        safety = 0;
+        while (remainder > 0 && safety < standCount * standCount)
         {
             int index = cursor % standCount;
-            distribution[index]++;
-            remainder--;
+            int available = MaxBricksPerStand - distribution[index];
+
+            if (available > 0)
+            {
+                int add = Mathf.Min(available, remainder);
+                distribution[index] += add;
+                remainder -= add;
+            }
+
             cursor++;
+            safety++;
         }
 
         return distribution;
