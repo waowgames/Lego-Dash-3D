@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -12,19 +13,12 @@ public enum LevelDifficulty
 
 public static class LevelAutoGenerator
 {
-    private const int MinStandCount = 6;
-    private const int MaxStandCount = 10;
-    private const int MinBricksPerStand = 7;
-    private static readonly BrickColor[] Palette = new[]
-    {
-        BrickColor.Blue,
-        BrickColor.Red,
-        BrickColor.Yellow,
-        BrickColor.Purple,
-        BrickColor.Green,
-        BrickColor.Pink,
-        BrickColor.Orange,
-    };
+    public const int StandMin = 6;
+    public const int StandMax = 10;
+    public const int MaxBricksPerStand = 10;
+    public const int TaskChunkSize = 9;
+
+    private static readonly BrickColor[] Palette = Enum.GetValues(typeof(BrickColor)).Cast<BrickColor>().ToArray();
 
     public class TaskPlan
     {
@@ -40,345 +34,340 @@ public static class LevelAutoGenerator
 
     public class StandPlan
     {
-        public List<BrickColor> Bricks { get; } = new();
+        public List<BrickColor> Bricks { get; set; } = new();
     }
 
-    public static IReadOnlyList<BrickColor> GenerateColorSet(LevelDifficulty difficulty, int totalBricks)
+    public struct ValidationResult
     {
-        int desiredCount = difficulty switch
+        public bool Success;
+        public string Message;
+        public int StandIndex;
+    }
+
+    public static System.Random CreateRandom(int? seed)
+    {
+        return seed.HasValue ? new System.Random(seed.Value) : null;
+    }
+
+    public static List<BrickColor> PickGlobalColorPool(LevelDifficulty difficulty, System.Random rng)
+    {
+        int desired = difficulty switch
         {
             LevelDifficulty.Easy => 3,
-            LevelDifficulty.Medium => Mathf.Clamp(4 + totalBricks / 180, 4, 6),
-            _ => Mathf.Clamp(6 + totalBricks / 270, 6, Mathf.Min(Palette.Length, 8)),
+            LevelDifficulty.Medium => 4,
+            _ => Mathf.Max(6, Palette.Length),
         };
 
-        desiredCount = Mathf.Clamp(desiredCount, 1, Palette.Length);
-        return Palette.Take(desiredCount).ToArray();
+        desired = Mathf.Clamp(desired, 1, Palette.Length);
+        var colors = Palette.ToList();
+        Shuffle(colors, rng);
+        return colors.Take(desired).ToList();
     }
 
-    public static List<int> GenerateStandCounts(LevelDifficulty difficulty, int totalBricks, int preferredStandCount)
+    public static (List<int> Counts, int AdjustedTotal) DistributeBrickCounts(int totalBricks)
     {
-        int standCount = Mathf.Clamp(preferredStandCount, MinStandCount, MaxStandCount);
+        totalBricks = Mathf.Max(1, totalBricks);
+        int standCount = Mathf.CeilToInt(totalBricks / (float)MaxBricksPerStand);
 
-        while (standCount < MaxStandCount && totalBricks / standCount > 18)
+        if (standCount < StandMin && totalBricks >= StandMin)
+        {
+            standCount = StandMin;
+        }
+
+        standCount = Mathf.Clamp(standCount, 1, StandMax);
+        if (standCount > totalBricks)
+        {
+            standCount = totalBricks;
+        }
+
+        while (standCount < StandMax && totalBricks > standCount * MaxBricksPerStand)
         {
             standCount++;
         }
 
-        while (standCount > MinStandCount && totalBricks / standCount < MinBricksPerStand)
+        if (totalBricks > standCount * MaxBricksPerStand)
         {
-            standCount--;
+            totalBricks = standCount * MaxBricksPerStand;
         }
 
-        return BuildStandCounts(difficulty, standCount, totalBricks);
+        int baseCount = totalBricks / standCount;
+        int remainder = totalBricks % standCount;
+        baseCount = Mathf.Max(1, baseCount);
+
+        var counts = new List<int>(standCount);
+        for (int i = 0; i < standCount; i++)
+        {
+            int count = baseCount + (i < remainder ? 1 : 0);
+            counts.Add(Mathf.Clamp(count, 1, MaxBricksPerStand));
+        }
+
+        return (counts, counts.Sum());
     }
 
-    public static Dictionary<BrickColor, int> GenerateColorQuotas(LevelDifficulty difficulty, int totalBricks, IReadOnlyList<BrickColor> colors)
+    public static List<StandPlan> GenerateStands(LevelDifficulty difficulty, List<int> standCounts, List<BrickColor> globalPool, System.Random rng)
     {
-        var weights = new List<float>();
+        var stands = new List<StandPlan>();
 
-        switch (difficulty)
+        foreach (int brickCount in standCounts)
         {
-            case LevelDifficulty.Easy:
-                weights.AddRange(new[] { 0.45f, 0.35f, 0.2f });
-                break;
-            case LevelDifficulty.Medium:
-                for (int i = 0; i < colors.Count; i++)
-                {
-                    float tilt = 0.15f * (1f - (float)i / Mathf.Max(1, colors.Count - 1));
-                    weights.Add(1f - tilt);
-                }
-                break;
-            default:
-                for (int i = 0; i < colors.Count; i++)
-                {
-                    float wobble = 0.05f * (i % 2 == 0 ? 1f : -1f);
-                    weights.Add(1f + wobble);
-                }
-                break;
-        }
-
-        AdjustWeightCount(weights, colors.Count);
-
-        float weightSum = Mathf.Max(0.0001f, weights.Sum());
-        var quotas = new Dictionary<BrickColor, int>();
-        int allocated = 0;
-
-        for (int i = 0; i < colors.Count; i++)
-        {
-            int count = Mathf.Max(0, Mathf.FloorToInt(totalBricks * (weights[i] / weightSum)));
-            quotas[colors[i]] = count;
-            allocated += count;
-        }
-
-        int remainder = totalBricks - allocated;
-        var order = Enumerable.Range(0, colors.Count)
-            .OrderByDescending(i => weights[i])
-            .ThenBy(i => i);
-
-        foreach (int index in order)
-        {
-            if (remainder <= 0)
-            {
-                break;
-            }
-
-            quotas[colors[index]]++;
-            remainder--;
-        }
-
-        while (remainder > 0)
-        {
-            for (int i = 0; i < colors.Count && remainder > 0; i++)
-            {
-                quotas[colors[i]]++;
-                remainder--;
-            }
-        }
-
-        SnapQuotasToTaskSize(quotas, totalBricks);
-        return quotas;
-    }
-
-    public static List<TaskPlan> GenerateTasks(LevelDifficulty difficulty, Dictionary<BrickColor, int> quotas)
-    {
-        var tasks = new List<TaskPlan>();
-        int baseChunk = TaskSize();
-        int chunkSize = difficulty switch
-        {
-            LevelDifficulty.Easy => baseChunk * 2,
-            LevelDifficulty.Medium => baseChunk + 3,
-            _ => baseChunk,
-        };
-
-        chunkSize = Mathf.Max(baseChunk, chunkSize);
-
-        var colorOrder = quotas.Keys.ToList();
-        int colorIndex = 0;
-
-        while (quotas.Values.Any(v => v > 0))
-        {
-            BrickColor color = colorOrder[colorIndex % colorOrder.Count];
-            int remaining = quotas[color];
-
-            if (remaining <= 0)
-            {
-                colorIndex++;
-                continue;
-            }
-
-            int desired = Mathf.Min(remaining, chunkSize);
-            desired -= desired % baseChunk;
-            desired = Mathf.Clamp(desired, baseChunk, remaining);
-            quotas[color] -= desired;
-            tasks.Add(new TaskPlan(color, desired));
-
-            colorIndex++;
-
-            if (difficulty == LevelDifficulty.Easy && colorIndex % colorOrder.Count == 0)
-            {
-                colorIndex = 0;
-            }
-        }
-
-        return tasks;
-    }
-
-    public static List<StandPlan> BuildStandStacks(LevelDifficulty difficulty, List<int> standCounts, List<TaskPlan> tasks, IReadOnlyList<BrickColor> colors)
-    {
-        _ = colors;
-        var stands = standCounts.Select(_ => new StandPlan()).ToList();
-        var remainingPerStand = standCounts.ToArray();
-        var weights = BuildWeights(difficulty, standCounts.Count);
-        var standOrder = Enumerable.Range(0, standCounts.Count)
-            .OrderByDescending(i => weights[i])
-            .ToList();
-
-        int rotation = 0;
-
-        foreach (var task in tasks)
-        {
-            int bricksLeft = task.RequiredCount;
-
-            while (bricksLeft > 0)
-            {
-                IEnumerable<int> sequence = difficulty switch
-                {
-                    LevelDifficulty.Easy => standOrder,
-                    LevelDifficulty.Medium => Rotate(standOrder, rotation),
-                    _ => Alternate(standCounts.Count, rotation),
-                };
-
-                foreach (int standIndex in sequence)
-                {
-                    if (bricksLeft <= 0)
-                    {
-                        break;
-                    }
-
-                    if (remainingPerStand[standIndex] <= 0)
-                    {
-                        continue;
-                    }
-
-                    stands[standIndex].Bricks.Add(task.Color);
-                    remainingPerStand[standIndex]--;
-                    bricksLeft--;
-                }
-
-                rotation++;
-            }
+            var bricks = GenerateStandColorDistribution(difficulty, brickCount, globalPool, rng);
+            stands.Add(new StandPlan { Bricks = bricks });
         }
 
         return stands;
     }
 
-    private static List<int> BuildStandCounts(LevelDifficulty difficulty, int standCount, int totalBricks)
+    public static List<BrickColor> GenerateStandColorDistribution(LevelDifficulty difficulty, int brickCount, IReadOnlyList<BrickColor> availableColors, System.Random rng)
     {
-        var weights = BuildWeights(difficulty, standCount);
-        float weightSum = Mathf.Max(0.0001f, weights.Sum());
+        brickCount = Mathf.Clamp(brickCount, 1, MaxBricksPerStand);
+        var colors = new List<BrickColor>(availableColors);
+        Shuffle(colors, rng);
 
-        var distribution = new List<int>();
-        int allocated = 0;
-
-        for (int i = 0; i < standCount; i++)
+        switch (difficulty)
         {
-            int count = Mathf.Max(MinBricksPerStand, Mathf.FloorToInt(totalBricks * (weights[i] / weightSum)));
-            distribution.Add(count);
-            allocated += count;
+            case LevelDifficulty.Easy:
+                return GenerateEasy(brickCount, colors, rng);
+            case LevelDifficulty.Medium:
+                return GenerateMedium(brickCount, colors, rng);
+            default:
+                return GenerateHard(brickCount, colors, rng);
+        }
+    }
+
+    public static List<TaskPlan> BuildTasksFromStands(IEnumerable<StandPlan> stands)
+    {
+        var totals = new Dictionary<BrickColor, int>();
+
+        foreach (var stand in stands)
+        {
+            foreach (var color in stand.Bricks)
+            {
+                if (!totals.ContainsKey(color))
+                {
+                    totals[color] = 0;
+                }
+
+                totals[color]++;
+            }
         }
 
-        int remainder = totalBricks - allocated;
-        var order = Enumerable.Range(0, standCount)
-            .OrderByDescending(i => weights[i])
-            .ThenBy(i => i);
+        return totals.Select(kvp => new TaskPlan(kvp.Key, kvp.Value)).ToList();
+    }
 
-        foreach (int index in order)
+    public static ValidationResult ValidateStand(LevelDifficulty difficulty, IReadOnlyList<BrickColor> bricks, int standIndex)
+    {
+        if (bricks == null)
         {
-            if (remainder <= 0)
-            {
+            return new ValidationResult { Success = false, StandIndex = standIndex, Message = "Stand is null." };
+        }
+
+        if (bricks.Count == 0)
+        {
+            return new ValidationResult { Success = false, StandIndex = standIndex, Message = "Stand has no bricks." };
+        }
+
+        if (bricks.Count > MaxBricksPerStand)
+        {
+            return new ValidationResult { Success = false, StandIndex = standIndex, Message = "Stand exceeds 10 brick cap." };
+        }
+
+        var colorCounts = bricks.GroupBy(b => b).ToDictionary(g => g.Key, g => g.Count());
+        int distinct = colorCounts.Count;
+        float maxShare = colorCounts.Values.Max() / (float)bricks.Count;
+
+        switch (difficulty)
+        {
+            case LevelDifficulty.Easy:
+                if (distinct < 2 || distinct > 3)
+                {
+                    return Fail(standIndex, "Easy stands must use 2 (rarely 3) colors.");
+                }
+
+                if (maxShare < 0.6f - Mathf.Epsilon)
+                {
+                    return Fail(standIndex, "Easy stands need a dominant color (>=60%).");
+                }
+
                 break;
-            }
 
-            distribution[index]++;
-            remainder--;
+            case LevelDifficulty.Medium:
+                if (distinct != 3)
+                {
+                    return Fail(standIndex, "Medium stands must use exactly 3 colors.");
+                }
+
+                if (maxShare > 0.5f + Mathf.Epsilon)
+                {
+                    return Fail(standIndex, "Medium stands must keep colors below 50%.");
+                }
+
+                if (!IsBalanced(colorCounts.Values, 1))
+                {
+                    return Fail(standIndex, "Medium stands should be evenly distributed (±1).");
+                }
+
+                break;
+
+            default:
+                if (distinct < 4 && bricks.Count >= 4)
+                {
+                    return Fail(standIndex, "Hard stands prefer 4 distinct colors.");
+                }
+
+                if (maxShare > 0.4f + Mathf.Epsilon)
+                {
+                    return Fail(standIndex, "Hard stands must keep colors below 40%.");
+                }
+
+                if (!IsBalanced(colorCounts.Values, 1))
+                {
+                    return Fail(standIndex, "Hard stands should stay balanced (±1).");
+                }
+
+                break;
         }
 
-        int cursor = 0;
-        while (remainder > 0)
-        {
-            int index = cursor % standCount;
-            distribution[index]++;
-            remainder--;
-            cursor++;
-        }
-
-        return distribution;
+        return new ValidationResult { Success = true, StandIndex = standIndex, Message = "" };
     }
 
-    private static List<float> BuildWeights(LevelDifficulty difficulty, int standCount)
+    public static ValidationResult ValidateTotals(IEnumerable<StandPlan> stands, int expectedTotal)
     {
-        var weights = new List<float>(standCount);
-
-        for (int i = 0; i < standCount; i++)
+        int total = stands.Sum(s => s.Bricks.Count);
+        if (total != expectedTotal)
         {
-            float t = standCount <= 1 ? 0f : (float)i / (standCount - 1);
-            float edgeBias = 1f - Mathf.Abs(0.5f - t) * 2f;
-
-            switch (difficulty)
+            return new ValidationResult
             {
-                case LevelDifficulty.Easy:
-                    weights.Add(1f + edgeBias * 0.6f);
-                    break;
-                case LevelDifficulty.Medium:
-                    weights.Add(1f + edgeBias * 0.35f);
-                    break;
-                default:
-                    weights.Add(1f + edgeBias * 0.1f);
-                    break;
-            }
+                Success = false,
+                StandIndex = -1,
+                Message = $"Total bricks mismatch. Expected {expectedTotal}, found {total}."
+            };
         }
 
-        return weights;
+        return new ValidationResult { Success = true, StandIndex = -1, Message = string.Empty };
     }
 
-    private static void AdjustWeightCount(List<float> weights, int desired)
+    private static ValidationResult Fail(int standIndex, string message)
     {
-        if (weights.Count == desired)
+        return new ValidationResult { Success = false, StandIndex = standIndex, Message = message };
+    }
+
+    private static List<BrickColor> GenerateEasy(int brickCount, List<BrickColor> colors, System.Random rng)
+    {
+        int distinct = Mathf.Clamp(colors.Count >= 3 && brickCount >= 3 && Chance(rng, 0.2f) ? 3 : 2, 1, colors.Count);
+        var chosen = colors.Take(distinct).ToList();
+        int dominant = Mathf.CeilToInt(brickCount * 0.6f);
+        int remaining = brickCount - dominant;
+
+        var bricks = new List<BrickColor>();
+        bricks.AddRange(Enumerable.Repeat(chosen[0], dominant));
+
+        if (distinct == 1)
+        {
+            bricks.AddRange(Enumerable.Repeat(chosen[0], remaining));
+        }
+        else if (distinct == 2)
+        {
+            bricks.AddRange(Enumerable.Repeat(chosen[1], remaining));
+        }
+        else
+        {
+            int split = Chance(rng, 0.5f) ? remaining / 2 : Mathf.CeilToInt(remaining / 2f);
+            bricks.AddRange(Enumerable.Repeat(chosen[1], split));
+            bricks.AddRange(Enumerable.Repeat(chosen[2], remaining - split));
+        }
+
+        Shuffle(bricks, rng);
+        return bricks;
+    }
+
+    private static List<BrickColor> GenerateMedium(int brickCount, List<BrickColor> colors, System.Random rng)
+    {
+        int distinct = Math.Min(3, colors.Count);
+        var chosen = colors.Take(distinct).ToList();
+
+        var counts = Enumerable.Repeat(brickCount / distinct, distinct).ToArray();
+        int remainder = brickCount % distinct;
+
+        for (int i = 0; i < remainder; i++)
+        {
+            counts[i % distinct]++;
+        }
+
+        if (counts.Max() / (float)brickCount > 0.5f)
+        {
+            counts[0] = Mathf.CeilToInt(brickCount * 0.5f);
+        }
+
+        var bricks = new List<BrickColor>();
+        for (int i = 0; i < distinct; i++)
+        {
+            bricks.AddRange(Enumerable.Repeat(chosen[i], counts[i]));
+        }
+
+        Shuffle(bricks, rng);
+        return bricks;
+    }
+
+    private static List<BrickColor> GenerateHard(int brickCount, List<BrickColor> colors, System.Random rng)
+    {
+        int distinct = Mathf.Min(colors.Count, brickCount >= 4 ? 4 : brickCount);
+        distinct = Mathf.Max(1, distinct);
+        var chosen = colors.Take(distinct).ToList();
+
+        var counts = Enumerable.Repeat(brickCount / distinct, distinct).ToArray();
+        int remainder = brickCount % distinct;
+
+        for (int i = 0; i < remainder; i++)
+        {
+            counts[i % distinct]++;
+        }
+
+        for (int i = 0; i < counts.Length; i++)
+        {
+            int maxAllowed = Mathf.CeilToInt(brickCount * 0.4f);
+            counts[i] = Mathf.Min(counts[i], maxAllowed);
+        }
+
+        var bricks = new List<BrickColor>();
+        for (int i = 0; i < distinct; i++)
+        {
+            bricks.AddRange(Enumerable.Repeat(chosen[i], counts[i]));
+        }
+
+        while (bricks.Count < brickCount)
+        {
+            bricks.Add(chosen[bricks.Count % distinct]);
+        }
+
+        Shuffle(bricks, rng);
+        return bricks;
+    }
+
+    private static void Shuffle<T>(List<T> list, System.Random rng)
+    {
+        if (list == null || list.Count == 0)
         {
             return;
         }
 
-        if (weights.Count > desired)
+        for (int i = list.Count - 1; i > 0; i--)
         {
-            weights.RemoveRange(desired, weights.Count - desired);
-            return;
-        }
-
-        while (weights.Count < desired)
-        {
-            weights.Add(weights.Last());
+            int swapIndex = rng?.Next(0, i + 1) ?? UnityEngine.Random.Range(0, i + 1);
+            (list[i], list[swapIndex]) = (list[swapIndex], list[i]);
         }
     }
 
-    private static IEnumerable<int> Rotate(List<int> source, int offset)
+    private static bool Chance(System.Random rng, float probability)
     {
-        int count = source.Count;
-        for (int i = 0; i < count; i++)
-        {
-            yield return source[(i + offset) % count];
-        }
+        float roll = rng != null ? (float)rng.NextDouble() : UnityEngine.Random.value;
+        return roll <= probability;
     }
 
-    private static IEnumerable<int> Alternate(int count, int offset)
+    private static bool IsBalanced(IEnumerable<int> counts, int tolerance)
     {
-        for (int i = 0; i < count; i++)
-        {
-            int index = (i % 2 == 0) ? i / 2 : count - 1 - i / 2;
-            yield return (index + offset) % count;
-        }
-    }
-
-    private static void SnapQuotasToTaskSize(Dictionary<BrickColor, int> quotas, int totalBricks)
-    {
-        var colors = quotas.Keys.ToList();
-        var adjusted = new Dictionary<BrickColor, int>();
-        int allocated = 0;
-
-        foreach (var color in colors)
-        {
-            int baseCount = Mathf.Max(0, quotas[color] - quotas[color] % TaskSize());
-            adjusted[color] = baseCount;
-            allocated += baseCount;
-        }
-
-        int remainder = totalBricks - allocated;
-        int step = TaskSize();
-
-        var order = colors
-            .OrderByDescending(c => quotas[c])
-            .ThenBy(c => (int)c)
-            .ToList();
-
-        int cursor = 0;
-        while (remainder >= step && order.Count > 0)
-        {
-            var color = order[cursor % order.Count];
-            adjusted[color] += step;
-            remainder -= step;
-            cursor++;
-        }
-
-        quotas.Clear();
-        foreach (var kvp in adjusted)
-        {
-            quotas[kvp.Key] = kvp.Value;
-        }
-    }
-
-    private static int TaskSize()
-    {
-        return 9;
+        int min = counts.Min();
+        int max = counts.Max();
+        return max - min <= tolerance;
     }
 }
 
