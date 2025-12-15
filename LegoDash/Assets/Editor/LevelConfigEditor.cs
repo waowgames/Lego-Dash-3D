@@ -137,7 +137,23 @@ public class LevelConfigEditor : Editor
             }
         }
 
-        var tasks = LevelAutoGenerator.BuildTasksFromStands(stands);
+        List<LevelAutoGenerator.TaskPlan> tasks = null;
+        LevelAutoGenerator.SolvabilityReport solvableReport;
+        int attempt = 0;
+
+        do
+        {
+            tasks = LevelAutoGenerator.BuildSolvableTasks(stands, difficulty, rng);
+            solvableReport = LevelAutoGenerator.SolvabilityCheck(stands, tasks, difficulty);
+            attempt++;
+        }
+        while (!solvableReport.Solvable && attempt < 100);
+
+        if (!solvableReport.Solvable)
+        {
+            _lastValidationMessage = solvableReport.Message;
+            return;
+        }
 
         Undo.RegisterCompleteObjectUndo(config, "Auto Generate Level");
         var so = new SerializedObject(config);
@@ -181,7 +197,11 @@ public class LevelConfigEditor : Editor
             }
         }
 
-        _lastValidationMessage = "All stands validated successfully.";
+        var tasks = config.Tasks.Select(t => new LevelAutoGenerator.TaskPlan(t.Color, LevelAutoGenerator.TaskChunkSize)).ToList();
+        var solvable = LevelAutoGenerator.SolvabilityCheck(stands, tasks, _difficulty);
+        _lastValidationMessage = solvable.Solvable
+            ? "All stands validated successfully."
+            : solvable.Message;
     }
 
     private void ApplyTasks(SerializedProperty tasksProp, List<LevelAutoGenerator.TaskPlan> tasks)
@@ -240,7 +260,7 @@ public class LevelConfigEditor : Editor
         var pool = LevelAutoGenerator.PickGlobalColorPool(_difficulty, rng);
         var (standCounts, adjustedTotal) = LevelAutoGenerator.DistributeBrickCounts(_totalBricksInput);
         var stands = LevelAutoGenerator.GenerateStands(_difficulty, standCounts, pool, rng);
-        var tasks = LevelAutoGenerator.BuildTasksFromStands(stands);
+        var tasks = LevelAutoGenerator.BuildSolvableTasks(stands, _difficulty, rng);
 
         UpdatePreview(config, stands, tasks, pool, adjustedTotal, _difficulty);
     }

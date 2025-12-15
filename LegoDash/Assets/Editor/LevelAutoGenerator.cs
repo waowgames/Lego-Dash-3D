@@ -37,6 +37,23 @@ public static class LevelAutoGenerator
         public List<BrickColor> Bricks { get; set; } = new();
     }
 
+    public struct DifficultyProfile
+    {
+        public int AccessibleLayersWindow;
+        public float RequiredReachableRatio;
+        public float PriorityStrength;
+    }
+
+    public struct SolvabilityReport
+    {
+        public bool Solvable;
+        public int FailedTaskIndex;
+        public BrickColor FailedColor;
+        public int ReachableCount;
+        public int RequiredCount;
+        public string Message;
+    }
+
     public struct ValidationResult
     {
         public bool Success;
@@ -134,24 +151,56 @@ public static class LevelAutoGenerator
         }
     }
 
-    public static List<TaskPlan> BuildTasksFromStands(IEnumerable<StandPlan> stands)
+    public static List<TaskPlan> BuildSolvableTasks(IEnumerable<StandPlan> sourceStands, LevelDifficulty difficulty, System.Random rng)
     {
-        var totals = new Dictionary<BrickColor, int>();
+        var profile = GetDifficultyProfile(difficulty);
+        var working = sourceStands
+            .Select(s => new StandPlan { Bricks = new List<BrickColor>(s.Bricks) })
+            .ToList();
 
-        foreach (var stand in stands)
+        var tasks = new List<TaskPlan>();
+        int totalBricks = working.Sum(s => s.Bricks.Count);
+        int guard = 0;
+
+        while (working.Any(s => s.Bricks.Count > 0) && guard < totalBricks * 3)
         {
-            foreach (var color in stand.Bricks)
+            guard++;
+            var reachable = GetReachableCounts(working, 1);
+            if (reachable.Count == 0)
             {
-                if (!totals.ContainsKey(color))
-                {
-                    totals[color] = 0;
-                }
-
-                totals[color]++;
+                break;
             }
+
+            var weighted = reachable
+                .Select(kvp =>
+                {
+                    int windowCount = CountWithinWindow(working, kvp.Key, profile.AccessibleLayersWindow);
+                    float score = kvp.Value + windowCount * profile.PriorityStrength;
+                    return (Color: kvp.Key, Score: score, Top: kvp.Value);
+                })
+                .OrderByDescending(item => item.Score)
+                .ThenBy(item => rng?.NextDouble() ?? UnityEngine.Random.value)
+                .ToList();
+
+            var selected = weighted.First();
+            int desired = Mathf.Max(1, Mathf.FloorToInt(selected.Top / Mathf.Max(0.01f, profile.RequiredReachableRatio)));
+            desired = Mathf.Clamp(desired, 1, selected.Top);
+
+            int collected = CollectColor(working, selected.Color, desired);
+            if (collected <= 0)
+            {
+                // Fallback: remove a single top brick to avoid infinite loops.
+                var firstStand = working.First(s => s.Bricks.Count > 0);
+                var color = firstStand.Bricks[0];
+                firstStand.Bricks.RemoveAt(0);
+                tasks.Add(new TaskPlan(color, 1));
+                continue;
+            }
+
+            tasks.Add(new TaskPlan(selected.Color, collected));
         }
 
-        return totals.Select(kvp => new TaskPlan(kvp.Key, kvp.Value)).ToList();
+        return tasks;
     }
 
     public static ValidationResult ValidateStand(LevelDifficulty difficulty, IReadOnlyList<BrickColor> bricks, int standIndex)
@@ -244,6 +293,144 @@ public static class LevelAutoGenerator
         }
 
         return new ValidationResult { Success = true, StandIndex = -1, Message = string.Empty };
+    }
+
+    public static SolvabilityReport SolvabilityCheck(IEnumerable<StandPlan> stands, IEnumerable<TaskPlan> tasks, LevelDifficulty difficulty)
+    {
+        var profile = GetDifficultyProfile(difficulty);
+        var working = stands
+            .Select(s => new StandPlan { Bricks = new List<BrickColor>(s.Bricks) })
+            .ToList();
+
+        var taskList = tasks.ToList();
+        for (int i = 0; i < taskList.Count; i++)
+        {
+            var task = taskList[i];
+            int remaining = Mathf.Max(0, task.RequiredCount);
+            int attempts = 0;
+
+            while (remaining > 0 && attempts < working.Sum(s => s.Bricks.Count) + 1)
+            {
+                attempts++;
+                var standIndex = working.FindIndex(s => s.Bricks.Count > 0 && s.Bricks[0] == task.Color);
+                if (standIndex < 0)
+                {
+                    int reachable = CountWithinWindow(working, task.Color, profile.AccessibleLayersWindow);
+                    return new SolvabilityReport
+                    {
+                        Solvable = false,
+                        FailedTaskIndex = i,
+                        FailedColor = task.Color,
+                        ReachableCount = reachable,
+                        RequiredCount = remaining,
+                        Message = $"Task {i + 1} failed: need {remaining} {task.Color} but only {reachable} reachable."
+                    };
+                }
+
+                working[standIndex].Bricks.RemoveAt(0);
+                remaining--;
+            }
+        }
+
+        int leftover = working.Sum(s => s.Bricks.Count);
+        if (leftover > 0)
+        {
+            return new SolvabilityReport
+            {
+                Solvable = false,
+                FailedTaskIndex = taskList.Count - 1,
+                FailedColor = taskList.LastOrDefault()?.Color ?? BrickColor.Blue,
+                ReachableCount = leftover,
+                RequiredCount = 0,
+                Message = $"Tasks completed but {leftover} bricks remain."
+            };
+        }
+
+        return new SolvabilityReport { Solvable = true, Message = "Level solvable." };
+    }
+
+    public static DifficultyProfile GetDifficultyProfile(LevelDifficulty difficulty)
+    {
+        return difficulty switch
+        {
+            LevelDifficulty.Easy => new DifficultyProfile
+            {
+                AccessibleLayersWindow = 2,
+                RequiredReachableRatio = 1.2f,
+                PriorityStrength = 0.6f,
+            },
+            LevelDifficulty.Medium => new DifficultyProfile
+            {
+                AccessibleLayersWindow = 4,
+                RequiredReachableRatio = 1.05f,
+                PriorityStrength = 0.35f,
+            },
+            _ => new DifficultyProfile
+            {
+                AccessibleLayersWindow = 6,
+                RequiredReachableRatio = 0.95f,
+                PriorityStrength = 0.2f,
+            },
+        };
+    }
+
+    private static int CollectColor(List<StandPlan> stands, BrickColor color, int desired)
+    {
+        int collected = 0;
+        int guard = stands.Sum(s => s.Bricks.Count) + 1;
+
+        while (collected < desired && guard-- > 0)
+        {
+            var standIndex = stands.FindIndex(s => s.Bricks.Count > 0 && s.Bricks[0] == color);
+            if (standIndex < 0)
+            {
+                break;
+            }
+
+            stands[standIndex].Bricks.RemoveAt(0);
+            collected++;
+        }
+
+        return collected;
+    }
+
+    private static Dictionary<BrickColor, int> GetReachableCounts(IEnumerable<StandPlan> stands, int layers)
+    {
+        var counts = new Dictionary<BrickColor, int>();
+        foreach (var stand in stands)
+        {
+            int take = Mathf.Min(layers, stand.Bricks.Count);
+            for (int i = 0; i < take; i++)
+            {
+                var color = stand.Bricks[i];
+                if (!counts.ContainsKey(color))
+                {
+                    counts[color] = 0;
+                }
+
+                counts[color]++;
+            }
+        }
+
+        return counts;
+    }
+
+    private static int CountWithinWindow(IEnumerable<StandPlan> stands, BrickColor color, int window)
+    {
+        int count = 0;
+        foreach (var stand in stands)
+        {
+            int take = Mathf.Min(window, stand.Bricks.Count);
+            for (int i = 0; i < take; i++)
+            {
+                if (stand.Bricks[i] == color)
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 
     private static ValidationResult Fail(int standIndex, string message)
