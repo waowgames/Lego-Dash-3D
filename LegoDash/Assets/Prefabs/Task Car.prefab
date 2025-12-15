@@ -242,7 +242,7 @@ Transform:
   m_GameObject: {fileID: 7903201784086467504}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.258, y: 0.052, z: 0.069999695}
+  m_LocalPosition: {x: 1.258, y: 1.011, z: 0.069999695}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -303,23 +303,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d8d8c269e0c49e4aa2a1207ee4654b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TaskCar
-  _bodyRenderer: {fileID: 1417521697885416360}
   _activeHighlight: {fileID: 0}
-  _colorMaterials:
-  - Color: 0
-    Material: {fileID: 2100000, guid: bf749f21541b241fd9005b50ea768020, type: 2}
-  - Color: 1
-    Material: {fileID: 2100000, guid: a26283bf3935c44e59f3a04dea7c36d0, type: 2}
-  - Color: 2
-    Material: {fileID: 2100000, guid: b7322a12f3dce438b94938ef705cec51, type: 2}
-  - Color: 3
-    Material: {fileID: 2100000, guid: fe74538105896409fbdd54eda0571f9a, type: 2}
-  - Color: 4
-    Material: {fileID: 2100000, guid: 4a8fae931ddeb442dabf3da2297fdc91, type: 2}
-  - Color: 5
-    Material: {fileID: 2100000, guid: 74bd0135f829a48a7943d3d7b450f639, type: 2}
-  - Color: 6
-    Material: {fileID: 2100000, guid: df2beed7010894d89829f9324eeadee7, type: 2}
+  _modelInstance: {fileID: 0}
   _brickSlots:
   - {fileID: 1662556393607755359}
   - {fileID: 4824645128392719009}
@@ -411,6 +396,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SlotTray-Blue
       objectReference: {fileID: 0}
+    - target: {fileID: 1054111592112900511, guid: d0b93465bff7b4926b14059efd72fe14, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6264400607613976604, guid: d0b93465bff7b4926b14059efd72fe14, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -456,11 +445,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d0b93465bff7b4926b14059efd72fe14, type: 3}
---- !u!23 &1417521697885416360 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: 4360470759836855422, guid: d0b93465bff7b4926b14059efd72fe14, type: 3}
-  m_PrefabInstance: {fileID: 3400091776975095766}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8773032266801694666 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6264400607613976604, guid: d0b93465bff7b4926b14059efd72fe14, type: 3}
