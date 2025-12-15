@@ -142,22 +142,59 @@ public static class LevelAutoGenerator
 
     public static List<TaskPlan> BuildTasksFromStands(IEnumerable<StandPlan> stands)
     {
-        var totals = new Dictionary<BrickColor, int>();
+        var exposureOrder = BuildAccessibilityOrder(stands);
+        var runningCounts = new Dictionary<BrickColor, int>();
+        var tasks = new List<TaskPlan>();
 
-        foreach (var stand in stands)
+        foreach (var color in exposureOrder)
         {
-            foreach (var color in stand.Bricks)
+            if (!runningCounts.ContainsKey(color))
             {
-                if (!totals.ContainsKey(color))
-                {
-                    totals[color] = 0;
-                }
+                runningCounts[color] = 0;
+            }
 
-                totals[color]++;
+            runningCounts[color]++;
+
+            if (runningCounts[color] >= TaskChunkSize)
+            {
+                tasks.Add(new TaskPlan(color, TaskChunkSize));
+                runningCounts[color] -= TaskChunkSize;
             }
         }
 
-        return totals.Select(kvp => new TaskPlan(kvp.Key, kvp.Value)).ToList();
+        return tasks;
+    }
+
+    public static List<BrickColor> BuildAccessibilityOrder(IEnumerable<StandPlan> stands)
+    {
+        var working = stands
+            .Select(s => s == null ? new List<BrickColor>() : new List<BrickColor>(s.Bricks))
+            .ToList();
+
+        var order = new List<BrickColor>();
+        bool progressed;
+
+        do
+        {
+            progressed = false;
+
+            for (int i = 0; i < working.Count; i++)
+            {
+                var bricks = working[i];
+                if (bricks.Count == 0)
+                {
+                    continue;
+                }
+
+                progressed = true;
+                int lastIndex = bricks.Count - 1; // Top-most brick sits at the end of the list.
+                order.Add(bricks[lastIndex]);
+                bricks.RemoveAt(lastIndex);
+            }
+        }
+        while (progressed);
+
+        return order;
     }
 
     public static ValidationResult ValidateStand(LevelDifficulty difficulty, IReadOnlyList<BrickColor> bricks, int standIndex)
