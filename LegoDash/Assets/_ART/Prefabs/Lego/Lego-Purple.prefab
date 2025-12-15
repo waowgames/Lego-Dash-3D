@@ -84,6 +84,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: cb12fb44157ec460bbce816b11e635e9, type: 2}
+    - target: {fileID: -5754084199372789682, guid: 07b676b58fbba4b71a717871ee293271, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 8563304681111110726, guid: 03e9d2a9d04e64aec86619751f070a1e, type: 3}
     - target: {fileID: 919132149155446097, guid: 07b676b58fbba4b71a717871ee293271, type: 3}
       propertyPath: m_Name
       value: Lego
