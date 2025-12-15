@@ -57,11 +57,12 @@ public class TaskCarManager : MonoBehaviour
         _construction = construction;
     }
 
-    public void BuildConvoyFromConfig(IReadOnlyList<LevelTaskDefinition> tasks)
+    public void BuildConvoyFromConfig(IReadOnlyList<LevelTaskDefinition> tasks,
+        Dictionary<BrickColor, TaskCar> prefabLookup)
     {
         ClearExistingCars();
 
-        if (_taskCarPrefab == null)
+        if ((prefabLookup == null || prefabLookup.Count == 0) && _taskCarPrefab == null)
         {
             Debug.LogWarning("TaskCar prefab eksik.");
             OnActiveCarChanged?.Invoke(null);
@@ -79,7 +80,14 @@ public class TaskCarManager : MonoBehaviour
         for (int i = 0; i < tasks.Count; i++)
         {
             var def = tasks[i];
-            var car = Instantiate(_taskCarPrefab, _convoyRoot == null ? transform : _convoyRoot);
+            var prefab = GetPrefabForColor(def.Color, prefabLookup);
+            if (prefab == null)
+            {
+                Debug.LogWarning($"{def.Color} rengi için TaskCar prefab bulunamadı.");
+                continue;
+            }
+
+            var car = Instantiate(prefab, _convoyRoot == null ? transform : _convoyRoot);
             car.transform.localPosition = GetLocalPositionForIndex(i);
             car.Initialize(def.Color, _bricksPerTask);
             car.SetActive(false);
@@ -171,6 +179,16 @@ public class TaskCarManager : MonoBehaviour
     {
         var forward = (_convoyRoot == null ? transform : _convoyRoot).right;
         return -forward.normalized * (_carSpacing * index);
+    }
+
+    private TaskCar GetPrefabForColor(BrickColor color, Dictionary<BrickColor, TaskCar> prefabLookup)
+    {
+        if (prefabLookup != null && prefabLookup.TryGetValue(color, out var mappedPrefab) && mappedPrefab != null)
+        {
+            return mappedPrefab;
+        }
+
+        return _taskCarPrefab;
     }
 
     private void RefreshActiveCar()

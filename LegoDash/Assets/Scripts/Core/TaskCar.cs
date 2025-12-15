@@ -11,13 +11,7 @@ public class TaskCar : MonoBehaviour
 {
     [Header("Appearance")]
     [SerializeField]
-    private Renderer _bodyRenderer;
-
-    [SerializeField]
     private GameObject _activeHighlight;
-
-    [SerializeField]
-    private List<TaskCarMaterialMapping> _colorMaterials = new();
 
     [Header("Task Setup")]
     [SerializeField]
@@ -46,8 +40,6 @@ public class TaskCar : MonoBehaviour
     private float _brickHeightSpacing = 0.25f;
 
     private readonly List<Brick> _placedBricks = new();
-    private Dictionary<BrickColor, Material> _materialLookup;
-    private Color _baseColor = Color.white;
     private int _incomingBricksCount;
 
     public BrickColor TaskColor { get; private set; }
@@ -62,8 +54,6 @@ public class TaskCar : MonoBehaviour
         TaskColor = color;
         _requiredBrickCount = Mathf.Max(1, requiredCount);
         RequiredBrickCount = _requiredBrickCount;
-        BuildMaterialLookup();
-        ApplyColor();
         ClearStoredBricks();
     }
 
@@ -74,11 +64,6 @@ public class TaskCar : MonoBehaviour
             _activeHighlight.SetActive(isActive);
         }
 
-        // if (_bodyRenderer != null)
-        // {
-        //     var targetColor = isActive ? _baseColor : _baseColor * 0.75f;
-        //     _bodyRenderer.material.DOColor(targetColor, 0.2f);
-        // }
     }
 
     public bool CanAcceptBrickColor(BrickColor color)
@@ -138,35 +123,6 @@ public class TaskCar : MonoBehaviour
         StartCoroutine(MoveBricksToCar(acceptedBricks, reservedStartIndex));
 
         return rejectedBricks;
-    }
-
-    private void BuildMaterialLookup()
-    {
-        _materialLookup = new Dictionary<BrickColor, Material>();
-        foreach (var mapping in _colorMaterials)
-        {
-            if (mapping.Material == null)
-            {
-                continue;
-            }
-
-            _materialLookup[mapping.Color] = mapping.Material;
-        }
-    }
-
-    private void ApplyColor()
-    {
-        if (_bodyRenderer == null)
-        {
-            return;
-        }
-
-        if (_materialLookup != null && _materialLookup.TryGetValue(TaskColor, out var mat))
-        {
-            _bodyRenderer.sharedMaterial = mat;
-        }
-
-        _baseColor = _bodyRenderer.material.color;
     }
 
     private IEnumerator MoveBricksToCar(List<Brick> bricks, int startIndex)
@@ -272,9 +228,3 @@ public class TaskCar : MonoBehaviour
     }
 }
 
-[Serializable]
-public struct TaskCarMaterialMapping
-{
-    public BrickColor Color;
-    public Material Material;
-}

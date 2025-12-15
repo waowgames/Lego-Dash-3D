@@ -20,12 +20,16 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
     [Header("Bricks")] [SerializeField] private List<BrickPrefabMapping> _brickPrefabs = new();
 
+    [Header("Task Cars")] [SerializeField]
+    private List<TaskCarPrefabMapping> _taskCarPrefabs = new();
+
     [Header("Level")] [Tooltip("LevelMissionManager yoksa başlangıçta yüklenir.")] [SerializeField]
     private LevelConfig _initialLevelConfig;
 
     [SerializeField] private bool _startLevelOnStart = true;
 
     private Dictionary<BrickColor, GameObject> _prefabLookup;
+    private Dictionary<BrickColor, TaskCar> _taskCarPrefabLookup;
     private bool _levelFailed;
     private bool _levelCompleted;
     private bool _levelStarted;
@@ -37,6 +41,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         base.Awake();
         FillTheStands();
         _prefabLookup = _brickPrefabs.ToDictionary(mapping => mapping.Color, mapping => mapping.Prefab);
+        _taskCarPrefabLookup = _taskCarPrefabs.ToDictionary(mapping => mapping.Color, mapping => mapping.Prefab);
         if (_taskCarManager != null)
         {
             _taskCarManager.OnActiveCarChanged += HandleActiveCarChanged;
@@ -130,7 +135,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
     private void BuildTasksFromConfig(LevelConfig config)
     {
-        _taskCarManager?.BuildConvoyFromConfig(config.Tasks);
+        _taskCarManager?.BuildConvoyFromConfig(config.Tasks, _taskCarPrefabLookup);
     }
 
     /// <summary>
@@ -354,4 +359,11 @@ public struct BrickPrefabMapping
 {
     public BrickColor Color;
     public GameObject Prefab;
+}
+
+[System.Serializable]
+public struct TaskCarPrefabMapping
+{
+    public BrickColor Color;
+    public TaskCar Prefab;
 }
