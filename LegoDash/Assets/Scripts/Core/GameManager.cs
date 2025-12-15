@@ -74,7 +74,12 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
     private void FillTheStands()
     {
-        _stands = FindObjectsByType<StandController>(FindObjectsSortMode.None).ToList();
+        var stands = FindObjectsByType<StandController>(FindObjectsSortMode.None).ToList();
+        foreach (var stand in stands)
+        {
+            if(_stands.Contains(stand)) continue;
+            else _stands.Add(stand);
+        }
     }
 
     public void StartLevel(LevelConfig config, int levelIndex)
