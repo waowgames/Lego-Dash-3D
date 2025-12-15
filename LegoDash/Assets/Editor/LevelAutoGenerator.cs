@@ -190,13 +190,13 @@ public static class LevelAutoGenerator
 
     public static List<StandPlan> BuildStandStacks(LevelDifficulty difficulty, List<int> standCounts, List<TaskPlan> tasks, IReadOnlyList<BrickColor> colors)
     {
-        _ = colors;
         var stands = standCounts.Select(_ => new StandPlan()).ToList();
         var remainingPerStand = standCounts.ToArray();
         var weights = BuildWeights(difficulty, standCounts.Count);
         var standOrder = Enumerable.Range(0, standCounts.Count)
             .OrderByDescending(i => weights[i])
             .ToList();
+        var colorStandOrders = BuildColorStandOrders(colors, standOrder);
 
         int rotation = 0;
 
@@ -206,11 +206,15 @@ public static class LevelAutoGenerator
 
             while (bricksLeft > 0)
             {
+                var colorOrder = colorStandOrders.ContainsKey(task.Color)
+                    ? colorStandOrders[task.Color]
+                    : standOrder;
+
                 IEnumerable<int> sequence = difficulty switch
                 {
-                    LevelDifficulty.Easy => standOrder,
-                    LevelDifficulty.Medium => Rotate(standOrder, rotation),
-                    _ => Alternate(standCounts.Count, rotation),
+                    LevelDifficulty.Easy => colorOrder,
+                    LevelDifficulty.Medium => Rotate(colorOrder, rotation),
+                    _ => AlternateWithBias(colorOrder, standCounts.Count, rotation),
                 };
 
                 foreach (int standIndex in sequence)
@@ -235,6 +239,27 @@ public static class LevelAutoGenerator
         }
 
         return stands;
+    }
+
+    private static Dictionary<BrickColor, List<int>> BuildColorStandOrders(IReadOnlyList<BrickColor> colors, List<int> baseOrder)
+    {
+        var orders = new Dictionary<BrickColor, List<int>>();
+
+        for (int i = 0; i < colors.Count; i++)
+        {
+            int offset = (i * 2 + 1) % baseOrder.Count;
+            bool reverse = i % 2 == 1;
+            var order = Rotate(baseOrder, offset).ToList();
+
+            if (reverse)
+            {
+                order.Reverse();
+            }
+
+            orders[colors[i]] = order;
+        }
+
+        return orders;
     }
 
     private static List<int> BuildStandCounts(LevelDifficulty difficulty, int standCount, int totalBricks)
@@ -358,6 +383,16 @@ public static class LevelAutoGenerator
         {
             int index = (i % 2 == 0) ? i / 2 : count - 1 - i / 2;
             yield return (index + offset) % count;
+        }
+    }
+
+    private static IEnumerable<int> AlternateWithBias(List<int> colorOrder, int count, int offset)
+    {
+        var alternating = Alternate(colorOrder.Count, offset).ToList();
+
+        foreach (int altIndex in alternating)
+        {
+            yield return colorOrder[altIndex % count];
         }
     }
 
