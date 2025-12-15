@@ -29,10 +29,10 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2620991332115504463}
+  - {fileID: 8961529454385497704}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &2581997207039392420
+--- !u!1001 &8923608829592363395
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -40,65 +40,57 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2027713212108393042}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: a74f99796c08a4af9aa0d5c47cad2d7d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: a74f99796c08a4af9aa0d5c47cad2d7d, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: a74f99796c08a4af9aa0d5c47cad2d7d, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: a74f99796c08a4af9aa0d5c47cad2d7d, type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: a74f99796c08a4af9aa0d5c47cad2d7d, type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: a74f99796c08a4af9aa0d5c47cad2d7d, type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: a74f99796c08a4af9aa0d5c47cad2d7d, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: a74f99796c08a4af9aa0d5c47cad2d7d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: a74f99796c08a4af9aa0d5c47cad2d7d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: a74f99796c08a4af9aa0d5c47cad2d7d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -7036551172066848631, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: fe74538105896409fbdd54eda0571f9a, type: 2}
-    - target: {fileID: -492326547402025506, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: fe74538105896409fbdd54eda0571f9a, type: 2}
-    - target: {fileID: 919132149155446097, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
+    - target: {fileID: 919132149155446097, guid: a74f99796c08a4af9aa0d5c47cad2d7d, type: 3}
       propertyPath: m_Name
-      value: SlotTray
+      value: PurpleSlotTray
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
---- !u!4 &2620991332115504463 stripped
+  m_SourcePrefab: {fileID: 100100000, guid: a74f99796c08a4af9aa0d5c47cad2d7d, type: 3}
+--- !u!4 &8961529454385497704 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6354df2e029b94a9eb223c3f1f1a739b, type: 3}
-  m_PrefabInstance: {fileID: 2581997207039392420}
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a74f99796c08a4af9aa0d5c47cad2d7d, type: 3}
+  m_PrefabInstance: {fileID: 8923608829592363395}
   m_PrefabAsset: {fileID: 0}
