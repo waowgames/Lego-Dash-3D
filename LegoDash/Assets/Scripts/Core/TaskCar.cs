@@ -9,15 +9,11 @@ using UnityEngine;
 /// </summary>
 public class TaskCar : MonoBehaviour
 {
-    [Header("Appearance")]
-    [SerializeField]
-    private Renderer _bodyRenderer;
-
     [SerializeField]
     private GameObject _activeHighlight;
-
+    
     [SerializeField]
-    private List<TaskCarMaterialMapping> _colorMaterials = new();
+    private GameObject _modelInstance;
 
     [Header("Task Setup")]
     [SerializeField]
@@ -46,8 +42,6 @@ public class TaskCar : MonoBehaviour
     private float _brickHeightSpacing = 0.25f;
 
     private readonly List<Brick> _placedBricks = new();
-    private Dictionary<BrickColor, Material> _materialLookup;
-    private Color _baseColor = Color.white;
     private int _incomingBricksCount;
 
     public BrickColor TaskColor { get; private set; }
@@ -62,8 +56,7 @@ public class TaskCar : MonoBehaviour
         TaskColor = color;
         _requiredBrickCount = Mathf.Max(1, requiredCount);
         RequiredBrickCount = _requiredBrickCount;
-        BuildMaterialLookup();
-        ApplyColor();
+        SpawnModelForColor();
         ClearStoredBricks();
     }
 
@@ -74,11 +67,6 @@ public class TaskCar : MonoBehaviour
             _activeHighlight.SetActive(isActive);
         }
 
-        // if (_bodyRenderer != null)
-        // {
-        //     var targetColor = isActive ? _baseColor : _baseColor * 0.75f;
-        //     _bodyRenderer.material.DOColor(targetColor, 0.2f);
-        // }
     }
 
     public bool CanAcceptBrickColor(BrickColor color)
@@ -140,33 +128,29 @@ public class TaskCar : MonoBehaviour
         return rejectedBricks;
     }
 
-    private void BuildMaterialLookup()
+    private void SpawnModelForColor()
     {
-        _materialLookup = new Dictionary<BrickColor, Material>();
-        foreach (var mapping in _colorMaterials)
+        if (_modelInstance != null)
         {
-            if (mapping.Material == null)
-            {
-                continue;
-            }
-
-            _materialLookup[mapping.Color] = mapping.Material;
+            Destroy(_modelInstance);
+            _modelInstance = null;
         }
-    }
 
-    private void ApplyColor()
-    {
-        if (_bodyRenderer == null)
+        var gameManager = GameManager.Instance;
+        if (gameManager == null)
         {
             return;
         }
 
-        if (_materialLookup != null && _materialLookup.TryGetValue(TaskColor, out var mat))
+        var prefab = gameManager.GetTaskCarPrefab(TaskColor);
+        if (prefab == null)
         {
-            _bodyRenderer.sharedMaterial = mat;
+            return;
         }
 
-        _baseColor = _bodyRenderer.material.color;
+        _modelInstance = Instantiate(prefab, transform);
+        _modelInstance.transform.localPosition = Vector3.zero;
+        _modelInstance.transform.localRotation = Quaternion.identity;
     }
 
     private IEnumerator MoveBricksToCar(List<Brick> bricks, int startIndex)
@@ -270,11 +254,4 @@ public class TaskCar : MonoBehaviour
         _placedBricks.Clear();
         _incomingBricksCount = 0;
     }
-}
-
-[Serializable]
-public struct TaskCarMaterialMapping
-{
-    public BrickColor Color;
-    public Material Material;
 }
