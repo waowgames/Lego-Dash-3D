@@ -17,6 +17,7 @@ public static class LevelAutoGenerator
     public const int StandMax = 10;
     public const int MaxBricksPerStand = 10;
     public const int TaskChunkSize = 9;
+    public const int ColorBlockSize = 9;
 
     private static readonly BrickColor[] Palette = Enum.GetValues(typeof(BrickColor)).Cast<BrickColor>().ToArray();
 
@@ -66,7 +67,7 @@ public static class LevelAutoGenerator
 
     public static (List<int> Counts, int AdjustedTotal) DistributeBrickCounts(int totalBricks)
     {
-        totalBricks = Mathf.Max(1, totalBricks);
+        totalBricks = Mathf.Max(ColorBlockSize, RoundDownToColorBlock(totalBricks));
         int standCount = Mathf.CeilToInt(totalBricks / (float)MaxBricksPerStand);
 
         if (standCount < StandMin && totalBricks >= StandMin)
@@ -87,7 +88,7 @@ public static class LevelAutoGenerator
 
         if (totalBricks > standCount * MaxBricksPerStand)
         {
-            totalBricks = standCount * MaxBricksPerStand;
+            totalBricks = RoundDownToColorBlock(standCount * MaxBricksPerStand);
         }
 
         int baseCount = totalBricks / standCount;
@@ -102,6 +103,11 @@ public static class LevelAutoGenerator
         }
 
         return (counts, counts.Sum());
+    }
+
+    public static int RoundDownToColorBlock(int value)
+    {
+        return Mathf.Max(ColorBlockSize, (value / ColorBlockSize) * ColorBlockSize);
     }
 
     public static List<StandPlan> GenerateStands(LevelDifficulty difficulty, List<int> standCounts, List<BrickColor> globalPool, System.Random rng)
@@ -136,22 +142,59 @@ public static class LevelAutoGenerator
 
     public static List<TaskPlan> BuildTasksFromStands(IEnumerable<StandPlan> stands)
     {
-        var totals = new Dictionary<BrickColor, int>();
+        var exposureOrder = BuildAccessibilityOrder(stands);
+        var runningCounts = new Dictionary<BrickColor, int>();
+        var tasks = new List<TaskPlan>();
 
-        foreach (var stand in stands)
+        foreach (var color in exposureOrder)
         {
-            foreach (var color in stand.Bricks)
+            if (!runningCounts.ContainsKey(color))
             {
-                if (!totals.ContainsKey(color))
-                {
-                    totals[color] = 0;
-                }
+                runningCounts[color] = 0;
+            }
 
-                totals[color]++;
+            runningCounts[color]++;
+
+            if (runningCounts[color] >= TaskChunkSize)
+            {
+                tasks.Add(new TaskPlan(color, TaskChunkSize));
+                runningCounts[color] -= TaskChunkSize;
             }
         }
 
-        return totals.Select(kvp => new TaskPlan(kvp.Key, kvp.Value)).ToList();
+        return tasks;
+    }
+
+    public static List<BrickColor> BuildAccessibilityOrder(IEnumerable<StandPlan> stands)
+    {
+        var working = stands
+            .Select(s => s == null ? new List<BrickColor>() : new List<BrickColor>(s.Bricks))
+            .ToList();
+
+        var order = new List<BrickColor>();
+        bool progressed;
+
+        do
+        {
+            progressed = false;
+
+            for (int i = 0; i < working.Count; i++)
+            {
+                var bricks = working[i];
+                if (bricks.Count == 0)
+                {
+                    continue;
+                }
+
+                progressed = true;
+                int lastIndex = bricks.Count - 1; // Top-most brick sits at the end of the list.
+                order.Add(bricks[lastIndex]);
+                bricks.RemoveAt(lastIndex);
+            }
+        }
+        while (progressed);
+
+        return order;
     }
 
     public static ValidationResult ValidateStand(LevelDifficulty difficulty, IReadOnlyList<BrickColor> bricks, int standIndex)
@@ -244,6 +287,193 @@ public static class LevelAutoGenerator
         }
 
         return new ValidationResult { Success = true, StandIndex = -1, Message = string.Empty };
+    }
+
+    public static ValidationResult ValidateColorBlocks(IEnumerable<StandPlan> stands, int expectedTotal)
+    {
+        if (expectedTotal % ColorBlockSize != 0)
+        {
+            return new ValidationResult
+            {
+                Success = false,
+                StandIndex = -1,
+                Message = $"Total bricks must be a multiple of {ColorBlockSize}."
+            };
+        }
+
+        var totals = BuildColorTotals(stands);
+        int total = totals.Values.Sum();
+        if (total != expectedTotal)
+        {
+            return new ValidationResult
+            {
+                Success = false,
+                StandIndex = -1,
+                Message = $"Color totals mismatch. Expected {expectedTotal}, found {total}."
+            };
+        }
+
+        foreach (var kvp in totals)
+        {
+            if (kvp.Value % ColorBlockSize != 0)
+            {
+                return new ValidationResult
+                {
+                    Success = false,
+                    StandIndex = -1,
+                    Message = $"{kvp.Key} count {kvp.Value} must be a multiple of {ColorBlockSize}."
+                };
+            }
+        }
+
+        return new ValidationResult { Success = true, StandIndex = -1, Message = string.Empty };
+    }
+
+    public static void NormalizeStandsToColorBlocks(List<StandPlan> stands, List<BrickColor> palette, int targetTotal)
+    {
+        if (stands == null || stands.Count == 0)
+        {
+            return;
+        }
+
+        targetTotal = Mathf.Max(ColorBlockSize, targetTotal);
+        targetTotal = RoundDownToColorBlock(targetTotal);
+
+        int currentTotal = stands.Sum(s => s.Bricks.Count);
+        if (currentTotal > targetTotal)
+        {
+            TrimStands(stands, currentTotal - targetTotal);
+        }
+
+        var currentTotals = BuildColorTotals(stands);
+        var desiredTotals = CalculateDesiredColorTotals(currentTotals, palette, targetTotal);
+        BalanceColorCounts(stands, currentTotals, desiredTotals);
+    }
+
+    public static Dictionary<BrickColor, int> BuildColorTotals(IEnumerable<StandPlan> stands)
+    {
+        var totals = new Dictionary<BrickColor, int>();
+
+        foreach (var stand in stands)
+        {
+            foreach (var color in stand.Bricks)
+            {
+                if (!totals.ContainsKey(color))
+                {
+                    totals[color] = 0;
+                }
+
+                totals[color]++;
+            }
+        }
+
+        return totals;
+    }
+
+    private static void TrimStands(List<StandPlan> stands, int bricksToRemove)
+    {
+        for (int i = 0; i < stands.Count && bricksToRemove > 0; i++)
+        {
+            var stand = stands[i];
+            while (stand.Bricks.Count > 1 && bricksToRemove > 0)
+            {
+                stand.Bricks.RemoveAt(stand.Bricks.Count - 1);
+                bricksToRemove--;
+            }
+        }
+    }
+
+    private static Dictionary<BrickColor, int> CalculateDesiredColorTotals(
+        IReadOnlyDictionary<BrickColor, int> currentTotals,
+        IReadOnlyList<BrickColor> palette,
+        int targetTotal)
+    {
+        var desired = new Dictionary<BrickColor, int>();
+        int remaining = targetTotal;
+
+        foreach (var color in palette)
+        {
+            int current = currentTotals.TryGetValue(color, out var count) ? count : 0;
+            int floor = (current / ColorBlockSize) * ColorBlockSize;
+            desired[color] = floor;
+            remaining -= floor;
+        }
+
+        var ordered = palette
+            .OrderByDescending(c => currentTotals.TryGetValue(c, out var count) ? count % ColorBlockSize : 0)
+            .ToList();
+
+        int index = 0;
+        while (remaining > 0 && ordered.Count > 0)
+        {
+            var color = ordered[index % ordered.Count];
+            desired[color] += ColorBlockSize;
+            remaining -= ColorBlockSize;
+            index++;
+        }
+
+        return desired;
+    }
+
+    private static void BalanceColorCounts(
+        List<StandPlan> stands,
+        Dictionary<BrickColor, int> currentTotals,
+        IReadOnlyDictionary<BrickColor, int> desiredTotals)
+    {
+        int GetCurrent(BrickColor color)
+        {
+            return currentTotals.TryGetValue(color, out var count) ? count : 0;
+        }
+
+        var deficit = desiredTotals
+            .Where(kvp => kvp.Value > GetCurrent(kvp.Key))
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value - GetCurrent(kvp.Key));
+
+        var excess = desiredTotals
+            .Where(kvp => kvp.Value < GetCurrent(kvp.Key))
+            .ToDictionary(kvp => kvp.Key, kvp => GetCurrent(kvp.Key) - kvp.Value);
+
+        if (deficit.Count == 0 || excess.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var stand in stands)
+        {
+            for (int i = 0; i < stand.Bricks.Count; i++)
+            {
+                var color = stand.Bricks[i];
+                if (!excess.TryGetValue(color, out int remaining) || remaining <= 0)
+                {
+                    continue;
+                }
+
+                var targetColor = deficit.FirstOrDefault(kvp => kvp.Value > 0).Key;
+                if (!deficit.ContainsKey(targetColor))
+                {
+                    return;
+                }
+
+                stand.Bricks[i] = targetColor;
+                excess[color]--;
+                deficit[targetColor]--;
+
+                if (excess[color] <= 0)
+                {
+                    excess.Remove(color);
+                }
+
+                if (deficit[targetColor] <= 0)
+                {
+                    deficit.Remove(targetColor);
+                }
+
+                if (deficit.Count == 0 || excess.Count == 0)
+                {
+                    return;
+                }
+            }
+        }
     }
 
     private static ValidationResult Fail(int standIndex, string message)

@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -50,7 +51,7 @@ public class LevelConfigEditor : Editor
 
         EditorGUILayout.LabelField("Auto Level Generator", EditorStyles.boldLabel);
         EditorGUILayout.HelpBox(
-            "Total bricks can be any positive value. Bricks are distributed across stands with a strict cap of 10 per stand.",
+            "Total bricks must be a multiple of 9. Bricks are distributed across stands with a strict cap of 10 per stand.",
             MessageType.Info);
 
         using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
@@ -93,11 +94,17 @@ public class LevelConfigEditor : Editor
                 ValidateCurrentConfig(config);
             }
 
+            if (GUILayout.Button("Auto Fix", GUILayout.Height(24)))
+            {
+                AutoFixConfiguration(config);
+            }
+
             if (!string.IsNullOrEmpty(_lastValidationMessage))
             {
                 EditorGUILayout.HelpBox(_lastValidationMessage, DetermineMessageType());
             }
 
+            DrawValidationStatus(config);
             DrawPreview();
         }
     }
@@ -112,6 +119,12 @@ public class LevelConfigEditor : Editor
 
         var rng = LevelAutoGenerator.CreateRandom(_useSeed ? _seedValue : (int?)null);
         var pool = LevelAutoGenerator.PickGlobalColorPool(difficulty, rng);
+        if (_totalBricksInput % LevelAutoGenerator.ColorBlockSize != 0)
+        {
+            _lastValidationMessage = $"Total bricks must be a multiple of {LevelAutoGenerator.ColorBlockSize}.";
+            return;
+        }
+
         var (standCounts, adjustedTotal) = LevelAutoGenerator.DistributeBrickCounts(_totalBricksInput);
 
         if (adjustedTotal != _totalBricksInput)
@@ -121,10 +134,18 @@ public class LevelConfigEditor : Editor
         }
 
         var stands = LevelAutoGenerator.GenerateStands(difficulty, standCounts, pool, rng);
+        LevelAutoGenerator.NormalizeStandsToColorBlocks(stands, pool, adjustedTotal);
         var totalValidation = LevelAutoGenerator.ValidateTotals(stands, adjustedTotal);
         if (!totalValidation.Success)
         {
             _lastValidationMessage = totalValidation.Message;
+            return;
+        }
+
+        var colorValidation = LevelAutoGenerator.ValidateColorBlocks(stands, adjustedTotal);
+        if (!colorValidation.Success)
+        {
+            _lastValidationMessage = colorValidation.Message;
             return;
         }
 
@@ -172,6 +193,19 @@ public class LevelConfigEditor : Editor
             return;
         }
 
+        if (_totalBricksInput % LevelAutoGenerator.ColorBlockSize != 0)
+        {
+            _lastValidationMessage = $"Total bricks must be a multiple of {LevelAutoGenerator.ColorBlockSize}.";
+            return;
+        }
+
+        var colorCheck = LevelAutoGenerator.ValidateColorBlocks(stands, _totalBricksInput);
+        if (!colorCheck.Success)
+        {
+            _lastValidationMessage = colorCheck.Message;
+            return;
+        }
+
         foreach (var result in stands.Select((s, i) => LevelAutoGenerator.ValidateStand(_difficulty, s.Bricks, i)))
         {
             if (!result.Success)
@@ -182,6 +216,54 @@ public class LevelConfigEditor : Editor
         }
 
         _lastValidationMessage = "All stands validated successfully.";
+    }
+
+    private List<LevelAutoGenerator.StandPlan> CopyStands(LevelConfig config)
+    {
+        return config?.Stands?.Select(s => new LevelAutoGenerator.StandPlan { Bricks = s.Bricks.ToList() }).ToList()
+               ?? new List<LevelAutoGenerator.StandPlan>();
+    }
+
+    private void AutoFixConfiguration(LevelConfig config)
+    {
+        if (config == null)
+        {
+            _lastValidationMessage = "No LevelConfig selected.";
+            return;
+        }
+
+        var stands = CopyStands(config);
+        if (stands.Count == 0)
+        {
+            _lastValidationMessage = "Config has no stands to fix.";
+            return;
+        }
+
+        int standTotal = stands.Sum(s => s.Bricks.Count);
+        if (standTotal < LevelAutoGenerator.ColorBlockSize)
+        {
+            _lastValidationMessage = $"Total bricks must be at least {LevelAutoGenerator.ColorBlockSize} to enforce color rules.";
+            return;
+        }
+
+        int targetTotal = LevelAutoGenerator.RoundDownToColorBlock(standTotal);
+        var palette = Enum.GetValues(typeof(BrickColor)).Cast<BrickColor>().ToList();
+
+        LevelAutoGenerator.NormalizeStandsToColorBlocks(stands, palette, targetTotal);
+        var tasks = LevelAutoGenerator.BuildTasksFromStands(stands);
+
+        Undo.RegisterCompleteObjectUndo(config, "Auto Fix Level");
+        var so = new SerializedObject(config);
+        ApplyTasks(so.FindProperty("tasks"), tasks);
+        ApplyStands(so.FindProperty("stands"), stands);
+        so.ApplyModifiedProperties();
+        EditorUtility.SetDirty(config);
+
+        _totalBricksInput = targetTotal;
+        UpdatePreview(config, stands, tasks, palette, targetTotal, _difficulty);
+
+        var colorCheck = LevelAutoGenerator.ValidateColorBlocks(stands, targetTotal);
+        _lastValidationMessage = colorCheck.Success ? "Auto-fix applied successfully." : colorCheck.Message;
     }
 
     private void ApplyTasks(SerializedProperty tasksProp, List<LevelAutoGenerator.TaskPlan> tasks)
@@ -236,10 +318,17 @@ public class LevelConfigEditor : Editor
             return;
         }
 
+        if (_totalBricksInput % LevelAutoGenerator.ColorBlockSize != 0)
+        {
+            _lastValidationMessage = $"Total bricks must be a multiple of {LevelAutoGenerator.ColorBlockSize}.";
+            return;
+        }
+
         var rng = LevelAutoGenerator.CreateRandom(_useSeed ? _seedValue : (int?)null);
         var pool = LevelAutoGenerator.PickGlobalColorPool(_difficulty, rng);
         var (standCounts, adjustedTotal) = LevelAutoGenerator.DistributeBrickCounts(_totalBricksInput);
         var stands = LevelAutoGenerator.GenerateStands(_difficulty, standCounts, pool, rng);
+        LevelAutoGenerator.NormalizeStandsToColorBlocks(stands, pool, adjustedTotal);
         var tasks = LevelAutoGenerator.BuildTasksFromStands(stands);
 
         UpdatePreview(config, stands, tasks, pool, adjustedTotal, _difficulty);
@@ -273,6 +362,33 @@ public class LevelConfigEditor : Editor
         {
             _lastValidationMessage = $"Preview ready for {difficulty}.";
         }
+    }
+
+    private void DrawValidationStatus(LevelConfig config)
+    {
+        var stands = CopyStands(config);
+        if (stands.Count == 0)
+        {
+            return;
+        }
+
+        var totals = LevelAutoGenerator.BuildColorTotals(stands);
+        int standTotal = stands.Sum(s => s.Bricks.Count);
+        bool totalMatches = standTotal == _totalBricksInput && standTotal % LevelAutoGenerator.ColorBlockSize == 0;
+
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("Validation Overview", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("Total Brick Count", $"{standTotal} (target {_totalBricksInput}) {(totalMatches ? "✓" : "✗")}");
+        EditorGUILayout.LabelField("Stand Brick Counts", string.Join(", ", stands.Select(s => s.Bricks.Count)));
+
+        foreach (var kvp in totals.OrderBy(kvp => kvp.Key))
+        {
+            bool ok = kvp.Value % LevelAutoGenerator.ColorBlockSize == 0;
+            EditorGUILayout.LabelField($"{kvp.Key}: {kvp.Value}", ok ? "✓ multiple of 9" : "✗ not a multiple of 9");
+        }
+
+        var colorCheck = LevelAutoGenerator.ValidateColorBlocks(stands, standTotal);
+        EditorGUILayout.LabelField("Total OK", colorCheck.Success && totalMatches ? "✅" : "❌");
     }
 
     private void DrawPreview()
