@@ -194,7 +194,8 @@ public static class LevelAutoGenerator
         var remainingPerStand = standCounts.ToArray();
         var weights = BuildWeights(difficulty, standCounts.Count);
         var standOrder = Enumerable.Range(0, standCounts.Count)
-            .OrderByDescending(i => weights[i])
+            .OrderByDescending(i => weights[i] + Random.value * 0.1f)
+            .ThenBy(_ => Random.value)
             .ToList();
         var colorStandOrders = BuildColorStandOrders(colors, standOrder);
 
@@ -247,19 +248,22 @@ public static class LevelAutoGenerator
 
         for (int i = 0; i < colors.Count; i++)
         {
-            int offset = (i * 2 + 1) % baseOrder.Count;
-            bool reverse = i % 2 == 1;
+            int offset = Random.Range(0, baseOrder.Count);
             var order = Rotate(baseOrder, offset).ToList();
-
-            if (reverse)
-            {
-                order.Reverse();
-            }
-
+            Shuffle(order);
             orders[colors[i]] = order;
         }
 
         return orders;
+    }
+
+    private static void Shuffle<T>(IList<T> list)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (list[i], list[j]) = (list[j], list[i]);
+        }
     }
 
     private static List<int> BuildStandCounts(LevelDifficulty difficulty, int standCount, int totalBricks)
