@@ -2347,6 +2347,12 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+  - boosterType: 2
+    watchAdButton: {fileID: 0}
+    stateLabel: {fileID: 0}
+    onBoosterTriggered:
+      m_PersistentCalls:
+        m_Calls: []
   adServiceProvider: {fileID: 0}
   boosterManager: {fileID: 0}
 --- !u!114 &8552283131531707407
