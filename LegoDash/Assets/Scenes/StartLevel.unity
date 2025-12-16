@@ -617,6 +617,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5331338675358132534, guid: a7895eaa3dca64d7cad78835ad3116f4, type: 3}
   m_PrefabInstance: {fileID: 322007170}
   m_PrefabAsset: {fileID: 0}
+--- !u!23 &322007172 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 3549977443052951384, guid: a7895eaa3dca64d7cad78835ad3116f4, type: 3}
+  m_PrefabInstance: {fileID: 322007170}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -2231,6 +2236,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1244791633}
+  - component: {fileID: 1244791634}
   m_Layer: 0
   m_Name: Conveyer
   m_TagString: Untagged
@@ -2254,6 +2260,21 @@ Transform:
   - {fileID: 322007171}
   m_Father: {fileID: 614341022}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1244791634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1244791632}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 221990e78c6f41c79640014c739b1b48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConveyorAnimator
+  _taskCarManager: {fileID: 614341023}
+  _conveyorRenderer: {fileID: 322007172}
+  _scrollSpeed: -1.6
 --- !u!1001 &1286470243
 PrefabInstance:
   m_ObjectHideFlags: 0
