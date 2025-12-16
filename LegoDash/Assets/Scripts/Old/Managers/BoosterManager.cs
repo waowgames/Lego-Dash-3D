@@ -35,7 +35,17 @@ public class BoosterManager : MonoBehaviour
 
     public bool IsBoosterActive(BoosterType type)
     {
+        if (!IsSingleUseBooster(type))
+        {
+            return false;
+        }
+
         return activeBoosters.Contains(type);
+    }
+
+    public bool IsSingleUseBooster(BoosterType type)
+    {
+        return type == BoosterType.ExtraSlots;
     }
 
     public void ActivateBooster(BoosterType type)
@@ -46,13 +56,22 @@ public class BoosterManager : MonoBehaviour
             return;
         }
 
-        if (IsBoosterActive(type))
+        bool isSingleUse = IsSingleUseBooster(type);
+
+        if (isSingleUse && IsBoosterActive(type))
         {
             Debug.Log($"BoosterManager: Booster '{type}' is already active.");
             return;
         }
 
-        activeBoosters.Add(type);
+        if (isSingleUse)
+        {
+            activeBoosters.Add(type);
+        }
+        else
+        {
+            activeBoosters.Remove(type);
+        }
         Debug.Log($"BoosterManager: Activated booster '{type}'.");
         onBoosterActivated?.Invoke(type);
     }

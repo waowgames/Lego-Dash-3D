@@ -199,7 +199,8 @@ public class BoosterUIManager : MonoBehaviour
             }
 
             onBoosterTriggered?.Invoke();
-            SetActive();
+
+            Refresh();
         }
 
         private bool IsActive()
