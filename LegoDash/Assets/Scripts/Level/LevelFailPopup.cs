@@ -89,8 +89,14 @@ public class LevelFailPopup : MonoBehaviour
 
     private void OnRetryClicked()
     {
-        // Level'ı yeniden başlat
-        LevelManager.Instance.RestartLevel();
+        if (LevelManager.Instance != null)
+        {
+            LevelManager.Instance.RestartLevel();
+        }
+        else
+        {
+            GameManager.Instance?.RestartActiveLevel();
+        }
         Hide();
     }
 
