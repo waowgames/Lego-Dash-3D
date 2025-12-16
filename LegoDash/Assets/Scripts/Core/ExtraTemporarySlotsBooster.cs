@@ -1,3 +1,5 @@
+using DG.Tweening;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 /// <summary>
@@ -13,6 +15,9 @@ public class ExtraTemporarySlotsBooster : MonoBehaviour
 
     private bool _boosterActive;
 
+    [SerializeField] private Transform modelToMove;
+    
+
     private void OnEnable()
     {
         Events.LevelStarted += HandleLevelStarted;
@@ -25,6 +30,7 @@ public class ExtraTemporarySlotsBooster : MonoBehaviour
         Events.LevelEnded -= HandleLevelEnded;
     }
 
+    [Button]
     public void ActivateExtraTemporarySlotsBooster()
     {
         if (_boosterActive)
@@ -42,17 +48,20 @@ public class ExtraTemporarySlotsBooster : MonoBehaviour
         if (_temporaryZone.AddExtraSlots(_extraSlotCount))
         {
             _boosterActive = true;
+            modelToMove.DOLocalMove(Vector3.left*4.5f,.325f);
         }
     }
 
     private void HandleLevelStarted(LevelStartPayload payload)
     {
         ResetBoosterState();
+        modelToMove.localPosition = Vector3.zero;
     }
 
     private void HandleLevelEnded(LevelEndPayload payload)
     {
         ResetBoosterState();
+        modelToMove.localPosition = Vector3.zero;
     }
 
     private void ResetBoosterState()

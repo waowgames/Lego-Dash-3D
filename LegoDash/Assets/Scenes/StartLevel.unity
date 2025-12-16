@@ -1500,6 +1500,11 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   _sequential: 1
+--- !u!4 &628404814 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3630478975275948655, guid: 4913d6a002c1c4695b35dedba8768898, type: 3}
+  m_PrefabInstance: {fileID: 357827334}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &656917389
 GameObject:
   m_ObjectHideFlags: 0
@@ -1753,6 +1758,7 @@ GameObject:
   m_Component:
   - component: {fileID: 909538730}
   - component: {fileID: 909538729}
+  - component: {fileID: 909538731}
   m_Layer: 0
   m_Name: Temproray Zone
   m_TagString: Untagged
@@ -1789,6 +1795,7 @@ MonoBehaviour:
   - {fileID: 546061532}
   - {fileID: 1564508428}
   - {fileID: 267643196}
+  _slotPositionsRoot: {fileID: 1173157298}
   _moveDuration: 0.45
   _moveStaggerDelay: 0.05
   _jumpPower: 2
@@ -1812,6 +1819,21 @@ Transform:
   - {fileID: 1173157298}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &909538731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 909538728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 616d675f9bec489fb1fca822663227de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ExtraTemporarySlotsBooster
+  _temporaryZone: {fileID: 909538729}
+  _extraSlotCount: 4
+  modelToMove: {fileID: 628404814}
 --- !u!1001 &915258392
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2197,6 +2219,7 @@ Transform:
   - {fileID: 2044717265}
   - {fileID: 455487915}
   - {fileID: 795904928}
+  - {fileID: 1659841013}
   m_Father: {fileID: 909538730}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1244791632
@@ -2847,6 +2870,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec4434d4db8838640a284aa3722da277, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StandController
+--- !u!1 &1659841012
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1659841013}
+  m_Layer: 0
+  m_Name: Bonus
+  m_TagString: Untagged
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1659841013
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1659841012}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 5.8687, y: 0.279, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1173157298}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1699493318 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2181467544050727447, guid: e7c6b2176273c9a449f462a8322a851d, type: 3}
