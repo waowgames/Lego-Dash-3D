@@ -17,7 +17,7 @@ public class AutoFillBooster : MonoBehaviour
 
     [Header("Animation")]
     [SerializeField]
-    private float _flyDuration = 0.35f;
+    private float _launchDelay = 0.05f;
 
     [SerializeField]
     private AnimationCurve _flyCurve;
@@ -84,14 +84,15 @@ public class AutoFillBooster : MonoBehaviour
 
         if (_sequential)
         {
+            float delay = Mathf.Max(0f, _launchDelay);
             foreach (var entry in collected)
             {
                 var rejected = SendToActiveCar(new List<Brick> { entry.Brick });
                 HandleRejectedBricks(rejected, collected);
 
-                if (_flyDuration > 0f)
+                if (delay > 0f)
                 {
-                    yield return new WaitForSeconds(_flyDuration);
+                    yield return new WaitForSeconds(delay);
                 }
             }
         }
