@@ -2721,6 +2721,42 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 730102778199589528, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: boosterManager
+      value: 
+      objectReference: {fileID: 1954648049}
+    - target: {fileID: 730102778199589528, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: adServiceProvider
+      value: 
+      objectReference: {fileID: 1954648049}
+    - target: {fileID: 730102778199589528, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: boosterSlots.Array.data[0].onBoosterTriggered.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 730102778199589528, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: boosterSlots.Array.data[0].onBoosterTriggered.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 730102778199589528, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: boosterSlots.Array.data[0].onBoosterTriggered.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 614341024}
+    - target: {fileID: 730102778199589528, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: boosterSlots.Array.data[0].onBoosterTriggered.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 730102778199589528, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: boosterSlots.Array.data[0].onBoosterTriggered.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Use
+      objectReference: {fileID: 0}
+    - target: {fileID: 730102778199589528, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: boosterSlots.Array.data[0].onBoosterTriggered.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: AutoFillBooster, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 730102778199589528, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: boosterSlots.Array.data[0].onBoosterTriggered.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: levels.Array.size
       value: 3
@@ -3153,6 +3189,68 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec4434d4db8838640a284aa3722da277, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StandController
+--- !u!1 &1954648047
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1954648050}
+  - component: {fileID: 1954648049}
+  - component: {fileID: 1954648048}
+  m_Layer: 0
+  m_Name: Booster Manger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1954648048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954648047}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ad9b7944e26ac44984c610cbd33047c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MockAdService
+  waitTimeRange: {x: 0, y: 1}
+  successChance: 1
+--- !u!114 &1954648049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954648047}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7eba1ed520d0e3f4b99ba48b120fdf32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BoosterManager
+  onBoosterActivated:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &1954648050
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954648047}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.01416, y: 3.25953, z: -7.12195}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2002745083
 GameObject:
   m_ObjectHideFlags: 0
@@ -3369,3 +3467,4 @@ SceneRoots:
   - {fileID: 909538730}
   - {fileID: 1809080344}
   - {fileID: 552867783}
+  - {fileID: 1954648050}
