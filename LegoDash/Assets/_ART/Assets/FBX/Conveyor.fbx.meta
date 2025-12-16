@@ -14,6 +14,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: Conveyor
     second: {fileID: 2100000, guid: 37f24fc3c89514e6f8bcac8774e4244a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Conveyor.001
+    second: {fileID: 2100000, guid: 787d5e65b36ac4be5bff626a9de5ecf0, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
