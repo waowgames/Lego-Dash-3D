@@ -125,7 +125,7 @@ public class TaskCarManager : MonoBehaviour
     private IEnumerator AdvanceConvoyCoroutine(TaskCar completedCar)
     {
         _isAdvancing = true;
-        OnConvoyMovementStarted?.Invoke();
+    
         completedCar.SetActive(false);
 
         if (_construction != null)
@@ -133,7 +133,7 @@ public class TaskCarManager : MonoBehaviour
             var collectedBricks = completedCar.CollectPlacedBricks();
             yield return _construction.BuildWithBricks(collectedBricks);
         }
-
+        OnConvoyMovementStarted?.Invoke();
         _cars.Remove(completedCar);
 
         if (_recycleCompletedCars)
