@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 /// <summary>
@@ -27,6 +28,7 @@ public class AutoFillBooster : MonoBehaviour
 
     private bool _isRunning;
 
+    [Button]
     public void Use()
     {
         if (_isRunning)

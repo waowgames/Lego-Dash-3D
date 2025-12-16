@@ -1362,6 +1362,7 @@ GameObject:
   m_Component:
   - component: {fileID: 614341022}
   - component: {fileID: 614341023}
+  - component: {fileID: 614341024}
   m_Layer: 0
   m_Name: Task Car Manager
   m_TagString: Untagged
@@ -1408,6 +1409,62 @@ MonoBehaviour:
   _completedTravelDistance: 10
   _completedTravelDuration: 0.5
   _completedTravelEase: 9
+--- !u!114 &614341024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 614341020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf53159a41e7c0b4097172d623aec1b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoFillBooster
+  _taskCarManager: {fileID: 614341023}
+  _standControllers:
+  - {fileID: 1863538518}
+  - {fileID: 1699595466}
+  - {fileID: 1368659895}
+  - {fileID: 983767796}
+  - {fileID: 1040356854}
+  - {fileID: 1932636032}
+  - {fileID: 915258395}
+  - {fileID: 1316864826}
+  - {fileID: 1148564506}
+  - {fileID: 1455390526}
+  - {fileID: 1699493318}
+  - {fileID: 419473107}
+  - {fileID: 2029916776}
+  - {fileID: 153763089}
+  - {fileID: 1652560646}
+  - {fileID: 450419392}
+  _launchDelay: 0.05
+  _flyCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _sequential: 1
 --- !u!1 &656917389
 GameObject:
   m_ObjectHideFlags: 0
