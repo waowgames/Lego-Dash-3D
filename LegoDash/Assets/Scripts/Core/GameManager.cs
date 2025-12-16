@@ -35,6 +35,8 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     private bool _levelStarted;
     private bool _inputLocked;
     private Construction _activeConstruction;
+    private LevelConfig _currentLevelConfig;
+    private int _currentLevelIndex;
 
     protected override void Awake()
     {
@@ -88,6 +90,9 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         _levelFailed = false;
         _levelCompleted = false; 
 
+        _currentLevelConfig = config;
+        _currentLevelIndex = levelIndex;
+
         _temporaryZone?.ResetZone();
  
 
@@ -118,6 +123,17 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         BuildStandsFromConfig(config);
         BuildTasksFromConfig(config);
         MoveTemporaryMatches();
+    }
+
+    public void RestartActiveLevel()
+    {
+        if (_currentLevelConfig == null)
+        {
+            Debug.LogWarning("Restart requested but no level has been initialized.");
+            return;
+        }
+
+        StartLevel(_currentLevelConfig, _currentLevelIndex);
     }
 
     private void BuildStandsFromConfig(LevelConfig config)

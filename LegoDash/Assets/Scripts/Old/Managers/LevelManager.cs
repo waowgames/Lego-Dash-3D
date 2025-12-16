@@ -165,7 +165,16 @@ public class LevelManager : MonoBehaviour
 
     }
 
-    public void RestartLevel() => LevelMissionManager.Instance?.ReloadCurrentLevel();
+    public void RestartLevel()
+    {
+        if (LevelMissionManager.Instance != null)
+        {
+            LevelMissionManager.Instance.ReloadCurrentLevel();
+            return;
+        }
+
+        GameManager.Instance?.RestartActiveLevel();
+    }
 
     public void NextLevel() => LevelMissionManager.Instance?.AdvanceToNextLevel();
 
