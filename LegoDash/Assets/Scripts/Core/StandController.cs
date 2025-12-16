@@ -26,6 +26,7 @@ public class StandController : MonoBehaviour
     private readonly List<Brick> _bricks = new();
     private Tween _modelScaleTween;
 
+    public Transform Model => _model;
     /// <summary>
     /// Builds the stand using the provided brick colors and prefab mapping.
     /// </summary>

@@ -9,16 +9,8 @@ public static class Events
     //public static Action<Vector3, int> SpawnMoneyEvent;
     //public static Action<string, Vector3, float> SpawnVFXForUIEvent; 
     //public static Action SpecialAnimalStarted;
-    public static Action MaterialStackedEvent;
-    public static Action OnPlayerLevelUp;
-    public static Action<int> OnPlayerSkinChangePreview;
-    public static Action<int> OnPlayerSkinChange;
-
-    public static Action<Vector4> RemoBoxOnGrid;
-    public static Action StopGrid;
-    
-    
-    
+    public static Action OnPlayerLevelUp; 
+     
     // LEVEL
     public static event Action<LevelStartPayload> LevelStarted;
     public static event Action<LevelEndPayload>   LevelEnded;
