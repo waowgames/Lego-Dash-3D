@@ -42,12 +42,14 @@ public class LevelFailPopup : MonoBehaviour
     {
         Events.LevelEnded += OnLevelEnded;
         Events.LevelTimeout += OnLevelTimeout;
+        Events.LevelStarted += OnLevelStarted;
     }
 
     private void OnDisable()
     {
         Events.LevelEnded -= OnLevelEnded;
         Events.LevelTimeout -= OnLevelTimeout;
+        Events.LevelStarted -= OnLevelStarted;
     }
 
 
@@ -59,6 +61,11 @@ public class LevelFailPopup : MonoBehaviour
             // payload üzerinde spesifik bir neden yoksa boş geçilir.
             Show();
         }
+    }
+
+    private void OnLevelStarted(LevelStartPayload payload)
+    {
+        ResetVisualState();
     }
 
     public void Show()
@@ -130,6 +137,24 @@ public class LevelFailPopup : MonoBehaviour
         else
         {
             if (_canvas != null) _canvas.enabled = false;
+        }
+    }
+
+    private void ResetVisualState()
+    {
+        _isShowing = false;
+
+        if (rootCg != null)
+        {
+            rootCg.DOKill();
+            rootCg.alpha = 0f;
+            rootCg.interactable = false;
+            rootCg.blocksRaycasts = false;
+        }
+
+        if (_canvas != null)
+        {
+            _canvas.enabled = false;
         }
     }
 }

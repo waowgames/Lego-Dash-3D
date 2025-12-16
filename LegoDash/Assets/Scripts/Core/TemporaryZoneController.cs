@@ -147,6 +147,11 @@ public class TemporaryZoneController : MonoBehaviour
 
     private IEnumerator MoveBrick(Transform brickTransform, Vector3 targetPosition)
     {
+        if (brickTransform == null)
+        {
+            yield break;
+        }
+
         brickTransform.DOKill();
         var startingRotation = brickTransform.rotation;
 
@@ -163,6 +168,11 @@ public class TemporaryZoneController : MonoBehaviour
         //     .SetEase(Ease.OutSine));
 
         yield return sequence.WaitForCompletion();
+
+        if (brickTransform == null)
+        {
+            yield break;
+        }
 
         brickTransform.position = targetPosition;
       //  brickTransform.rotation = startingRotation;
