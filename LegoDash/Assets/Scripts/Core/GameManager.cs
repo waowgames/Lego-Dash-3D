@@ -174,6 +174,11 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             return;
         }
 
+        if (_taskCarManager.IsAdvancing)
+        {
+            return;
+        }
+
         var activeCar = _taskCarManager.ActiveCar;
         if (activeCar == null)
         {

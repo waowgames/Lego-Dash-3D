@@ -49,6 +49,11 @@ public class TaskCarManager : MonoBehaviour
 
     public TaskCar ActiveCar => _cars.Count > 0 ? _cars[0] : null;
 
+    /// <summary>
+    /// True while the convoy is shifting forward after a car completes its task.
+    /// </summary>
+    public bool IsAdvancing => _isAdvancing;
+
     public event Action<TaskCar> OnActiveCarChanged;
     public event Action OnAllCarsCompleted;
 
