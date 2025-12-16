@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -8,250 +7,232 @@ using UnityEngine.UI;
 public class BoosterUIManager : MonoBehaviour
 {
     [SerializeField] private BoosterSlot[] boosterSlots = Array.Empty<BoosterSlot>();
+    [SerializeField] private MonoBehaviour adServiceProvider;
+    [SerializeField] private BoosterManager boosterManager;
 
-    private bool subscribedToScore;
-    private Coroutine waitRoutine;
+    private IAdService adService;
 
-
-    private void Start()
+    private void Awake()
     {
-        InvokeRepeating(nameof(RefreshAll),1,2);
+        CacheAdService();
+        CacheBoosterManager();
     }
 
     private void OnEnable()
     {
         foreach (var slot in boosterSlots)
+        {
             slot?.Setup(this);
-
-        TrySubscribeScore();
-        RefreshAll();
+        }
     }
 
     private void OnDisable()
     {
         foreach (var slot in boosterSlots)
+        {
             slot?.Teardown();
-
-        if (subscribedToScore && UIManager.Instance != null)
-        {
-            UIManager.Instance.ScoreChanged -= HandleScoreChanged;
-            subscribedToScore = false;
-        }
-
-        if (waitRoutine != null)
-        {
-            StopCoroutine(waitRoutine);
-            waitRoutine = null;
         }
     }
 
-    private void TrySubscribeScore()
+    internal IAdService GetAdService()
     {
-        if (UIManager.Instance != null)
+        return adService;
+    }
+
+    internal BoosterManager GetBoosterManager()
+    {
+        return boosterManager != null ? boosterManager : BoosterManager.Instance;
+    }
+
+    private void CacheAdService()
+    {
+        if (adServiceProvider is IAdService service)
         {
-            UIManager.Instance.ScoreChanged += HandleScoreChanged;
-            subscribedToScore = true;
+            adService = service;
+            return;
         }
-        else if (waitRoutine == null)
+
+        if (adServiceProvider != null)
         {
-            waitRoutine = StartCoroutine(WaitForScoreManager());
+            Debug.LogWarning("BoosterUIManager: Assigned ad service does not implement IAdService.");
         }
+
+        foreach (var component in FindObjectsOfType<MonoBehaviour>(true))
+        {
+            if (component is IAdService fallbackService)
+            {
+                adService = fallbackService;
+                adServiceProvider = component;
+                return;
+            }
+        }
+
+        Debug.LogWarning("BoosterUIManager: No IAdService found. Ad flow will fail.");
     }
 
-    private IEnumerator WaitForScoreManager()
+    private void CacheBoosterManager()
     {
-        while (UIManager.Instance == null)
-            yield return null;
+        if (boosterManager != null)
+            return;
 
-        UIManager.Instance.ScoreChanged += HandleScoreChanged;
-        subscribedToScore = true;
-        waitRoutine = null;
-        RefreshAll();
-    }
-
-    private void HandleScoreChanged(int _)
-    {
-        RefreshAll();
-    }
-
-    private void RefreshAll()
-    {
-        foreach (var slot in boosterSlots)
-            slot?.Refresh();
-    }
-
-    internal bool TrySpend(int cost)
-    {
-        if (UIManager.Instance == null)
-            return false;
-
-        if (UIManager.Instance.Score < cost)
-            return false;
-
-        UIManager.Instance.ScoreAdd(-cost);
-        return true;
+        boosterManager = BoosterManager.Instance;
+        if (boosterManager == null)
+        {
+            boosterManager = FindObjectOfType<BoosterManager>(true);
+        }
     }
 
     [Serializable]
     private class BoosterSlot
     {
-        [SerializeField] private string id = "";
-        [SerializeField] private Button boosterButton;
+        [SerializeField] private BoosterType boosterType = BoosterType.None;
+        [SerializeField] private Button watchAdButton;
+        [SerializeField] private TMP_Text stateLabel;
         [SerializeField] private UnityEvent onBoosterTriggered;
-        [SerializeField] private int price = 10;
-
-        [Header("Purchase UI")]
-        [SerializeField] private GameObject purchaseContainer;
-        [SerializeField] private GameObject watchIcon;
-        [SerializeField] private Button purchaseButton;
-        [SerializeField] private TextMeshProUGUI priceLabel;
-
-        [Header("Owned UI")]
-        [SerializeField] private GameObject ownedContainer;
-        [SerializeField] private TextMeshProUGUI ownedCountLabel;
 
         private BoosterUIManager owner;
-        private int ownedCount;
+        private bool isLoading;
 
         public void Setup(BoosterUIManager owner)
         {
             this.owner = owner;
-            ownedCount = LoadOwnedCount();
-
-            if (boosterButton != null)
-                boosterButton.onClick.AddListener(UseBooster);
-
-            if (purchaseButton != null)
-                purchaseButton.onClick.AddListener(PurchaseBooster);
-
-            if (priceLabel != null)
-                priceLabel.text = price.ToString();
+            if (watchAdButton != null)
+            {
+                watchAdButton.onClick.AddListener(HandleWatchAdClicked);
+            }
 
             Refresh();
         }
 
         public void Teardown()
         {
-            if (boosterButton != null)
-                boosterButton.onClick.RemoveListener(UseBooster);
+            if (watchAdButton != null)
+            {
+                watchAdButton.onClick.RemoveListener(HandleWatchAdClicked);
+            }
 
-            if (purchaseButton != null)
-                purchaseButton.onClick.RemoveListener(PurchaseBooster);
+            isLoading = false;
         }
-        
 
         public void Refresh()
         {
-            ownedCount = LoadOwnedCount();
+            if (IsActive())
+            {
+                SetActive();
+                return;
+            }
 
-            bool hasBooster = ownedCount > 0;
+            if (isLoading)
+            {
+                SetLoading();
+                return;
+            }
 
-            if (purchaseContainer != null)
-                purchaseContainer.SetActive(!hasBooster);
-
-            if (ownedContainer != null)
-                ownedContainer.SetActive(hasBooster);
-
-            if (ownedCountLabel != null)
-                ownedCountLabel.text = ownedCount.ToString();
-
-            if (priceLabel != null)
-                priceLabel.text = price.ToString();
-
-            if (purchaseButton != null)
-                purchaseButton.interactable = CanAffordBooster() || IsRewardedAdReady();
-
-            if (boosterButton != null)
-                boosterButton.interactable = hasBooster;
+            SetIdle();
         }
 
-        private void UseBooster()
-        {
-            if (ownedCount <= 0)
-                return;
-
-            bool used = true; 
-
-            if (!used)
-                return;
-
-            ownedCount--;
-            SaveOwnedCount();
-            Refresh();
-            onBoosterTriggered?.Invoke();
-        }
-
- 
-        private void PurchaseBooster()
+        private void HandleWatchAdClicked()
         {
             if (owner == null)
                 return;
- 
-            if (owner.TrySpend(price))
+
+            if (IsActive())
             {
-                GrantBooster();
+                Debug.Log("BoosterUIManager: Booster already active, ignoring click.");
+                SetActive();
                 return;
             }
 
-            if (TryPurchaseWithAd())
+            var service = owner.GetAdService();
+            if (service == null)
             {
+                Debug.LogWarning("BoosterUIManager: No ad service available.");
                 return;
             }
-            
-            Refresh();
-        }
 
-        private int LoadOwnedCount()
-        {
-            return PlayerPrefs.GetInt(GetPrefKey(), 0);
-        }
-
-        private void SaveOwnedCount()
-        {
-            PlayerPrefs.SetInt(GetPrefKey(), Mathf.Max(0, ownedCount));
-            PlayerPrefs.Save();
-        }
-
-        private bool CanAffordBooster()
-        {
-            if (UIManager.Instance != null && UIManager.Instance.Score < price)
+            string placement = boosterType.ToString();
+            if (!service.IsAdReady(placement))
             {
-                watchIcon.SetActive(true);
-                priceLabel.text = "Watch AD";
+                Debug.LogWarning($"BoosterUIManager: Ad not ready for placement '{placement}'.");
+                return;
+            }
+
+            StartAdFlow(service, placement);
+        }
+
+        private void StartAdFlow(IAdService service, string placement)
+        {
+            isLoading = true;
+            SetLoading();
+            Debug.Log($"BoosterUIManager: Starting ad for booster '{boosterType}'.");
+
+            service.ShowRewarded(
+                placement,
+                OnAdSuccess,
+                OnAdFailed);
+        }
+
+        private void OnAdSuccess()
+        {
+            isLoading = false;
+            Debug.Log($"BoosterUIManager: Ad success for booster '{boosterType}'. Activating booster.");
+            ActivateBooster();
+        }
+
+        private void OnAdFailed()
+        {
+            isLoading = false;
+            Debug.LogWarning($"BoosterUIManager: Ad failed or cancelled for booster '{boosterType}'.");
+            SetIdle();
+        }
+
+        private void ActivateBooster()
+        {
+            var manager = owner.GetBoosterManager();
+            if (manager != null)
+            {
+                manager.ActivateBooster(boosterType);
             }
             else
             {
-                watchIcon.SetActive(false);
-                priceLabel.text = price.ToString();
+                Debug.LogWarning("BoosterUIManager: No BoosterManager available to activate booster.");
             }
-            return UIManager.Instance != null && UIManager.Instance.Score >= price;
+
+            onBoosterTriggered?.Invoke();
+            SetActive();
         }
 
-        private bool IsRewardedAdReady()
+        private bool IsActive()
         {
-            return false;
+            var manager = owner?.GetBoosterManager();
+            return manager != null && manager.IsBoosterActive(boosterType);
         }
 
-        private void GrantBooster()
+        private void SetIdle()
         {
-            ownedCount++;
-            SaveOwnedCount();
-            Refresh();
+            if (stateLabel != null)
+                stateLabel.text = "Watch Ad";
+
+            if (watchAdButton != null)
+                watchAdButton.interactable = true;
         }
 
-        private bool TryPurchaseWithAd()
+        private void SetLoading()
         {
-        
+            if (stateLabel != null)
+                stateLabel.text = "Loading...";
 
-            return false;
+            if (watchAdButton != null)
+                watchAdButton.interactable = false;
         }
 
-        private string GetPrefKey()
+        private void SetActive()
         {
-            if (string.IsNullOrEmpty(id))
-                id = boosterButton != null ? boosterButton.name : GetHashCode().ToString();
+            if (stateLabel != null)
+                stateLabel.text = "Active";
 
-            return $"booster_{id}_count";
+            if (watchAdButton != null)
+                watchAdButton.interactable = false;
         }
     }
 }
