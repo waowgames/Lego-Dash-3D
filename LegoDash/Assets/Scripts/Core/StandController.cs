@@ -23,6 +23,13 @@ public class StandController : MonoBehaviour
     [SerializeField]
     private float _brickHeightSpacing = 0.25f;
 
+    [Header("Reorder Animation")]
+    [SerializeField]
+    private float _reorderDuration = 0.15f;
+
+    [SerializeField]
+    private Ease _reorderEase = Ease.OutCubic;
+
     private readonly List<Brick> _bricks = new();
     private Tween _modelScaleTween;
 
@@ -138,6 +145,52 @@ public class StandController : MonoBehaviour
 
     public int BrickCount => _bricks.Count;
 
+    /// <summary>
+    /// Attempts to remove the first brick matching the requested color starting from the bottom.
+    /// </summary>
+    public bool TryPopBrickByColorFromBottom(BrickColor color, out Brick brick)
+    {
+        brick = null;
+
+        for (int i = 0; i < _bricks.Count; i++)
+        {
+            if (_bricks[i].Color != color)
+            {
+                continue;
+            }
+
+            brick = _bricks[i];
+            _bricks.RemoveAt(i);
+
+            DetachBrickInstance(brick);
+            CollapseAndReorder();
+            UpdateModelScale(_bricks.Count == 0);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Repositions all bricks to close any gaps in the stack with a short animation.
+    /// </summary>
+    public void CollapseAndReorder()
+    {
+        for (int i = 0; i < _bricks.Count; i++)
+        {
+            var brickTransform = _bricks[i].Instance == null ? null : _bricks[i].Instance.transform;
+            if (brickTransform == null)
+            {
+                continue;
+            }
+
+            brickTransform.DOKill();
+            brickTransform.SetParent(_brickParent == null ? transform : _brickParent);
+            var targetPosition = Vector3.up * (_brickHeightSpacing * i);
+            brickTransform.DOLocalMove(targetPosition, _reorderDuration).SetEase(_reorderEase);
+        }
+    }
+
     private void OnMouseDown()
     {
         // Relay click/tap interactions to the central game manager.
@@ -190,6 +243,20 @@ public class StandController : MonoBehaviour
         else
         {
             _model.localScale = targetScale;
+        }
+    }
+
+    private void DetachBrickInstance(Brick brick)
+    {
+        if (brick == null || brick.Instance == null)
+        {
+            return;
+        }
+
+        var brickTransform = brick.Instance.transform;
+        if (brickTransform.parent != null)
+        {
+            brickTransform.SetParent(null);
         }
     }
 }
