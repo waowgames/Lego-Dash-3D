@@ -99,6 +99,7 @@ public class LevelMissionManager : SingletonMonoBehaviour<LevelMissionManager>
         if (GameManager.Instance != null)
         {
             GameManager.Instance.StartLevel(CurrentLevelConfig, CurrentLevelIndex);
+            Events.RaiseLevelStarted(new LevelStartPayload());
         }
     }
 }

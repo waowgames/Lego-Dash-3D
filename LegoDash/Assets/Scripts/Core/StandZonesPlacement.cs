@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 /// <summary>
@@ -7,36 +9,27 @@ using UnityEngine;
 /// </summary>
 public class StandZonesPlacement : MonoBehaviour
 {
-    [Tooltip("Assign exactly 16 stand references in their desired visual order.")]
-    [SerializeField]
+    [Tooltip("Assign exactly 16 stand references in their desired visual order.")] [SerializeField]
     private StandController[] _stands = new StandController[16];
 
-    [Header("Layout Settings")]
-    [SerializeField]
+    [Header("Layout Settings")] [SerializeField]
     private float _spacingX = 2f;
 
-    [SerializeField]
-    private float _spacingZ = 2f;
+    [SerializeField] private float _spacingZ = 2f;
 
-    [Tooltip("Optional anchor for determining the layout center and orientation.")]
-    [SerializeField]
+    [Tooltip("Optional anchor for determining the layout center and orientation.")] [SerializeField]
     private Transform _centerAnchor;
 
-    [Tooltip("Fallback center point when no anchor is provided.")]
-    [SerializeField]
+    [Tooltip("Fallback center point when no anchor is provided.")] [SerializeField]
     private Vector3 _centerPoint = Vector3.zero;
 
-    [Header("Behavior")]
-    [Tooltip("Preserve each stand's current Y position when re-centering.")]
-    [SerializeField]
+    [Header("Behavior")] [Tooltip("Preserve each stand's current Y position when re-centering.")] [SerializeField]
     private bool _keepY = true;
 
-    [Tooltip("Animate repositioning with DOTween when available.")]
-    [SerializeField]
+    [Tooltip("Animate repositioning with DOTween when available.")] [SerializeField]
     private bool _animate = true;
 
-    [SerializeField]
-    private float _animDuration = 0.35f;
+    [SerializeField] private float _animDuration = 0.35f;
 
     private Vector3[] _originalLocalPositions;
     private bool _hasCachedOriginalPositions;
@@ -44,6 +37,13 @@ public class StandZonesPlacement : MonoBehaviour
     private void Awake()
     {
         CacheOriginalPositions();
+        Refresh();
+        Events.LevelStarted += RefreshOnLevelEnd;
+    }
+
+    private IEnumerator Start()
+    {
+        yield return new WaitForSeconds(0.1f);
         Refresh();
     }
 
@@ -57,9 +57,15 @@ public class StandZonesPlacement : MonoBehaviour
         }
     }
 
+    private void RefreshOnLevelEnd(LevelStartPayload l)
+    {
+        Refresh();
+    }
+
     /// <summary>
     /// Rebuild the layout based on currently active stands.
     /// </summary>
+    [Button]
     [ContextMenu("Refresh")]
     public void Refresh()
     {
@@ -74,9 +80,11 @@ public class StandZonesPlacement : MonoBehaviour
         for (int i = 0; i < _stands.Length; i++)
         {
             var stand = _stands[i];
-            if (stand != null && stand.gameObject.activeInHierarchy)
+            stand.GetComponent<Collider>().enabled = false;
+            if (stand != null && stand.Model.localScale != Vector3.zero)
             {
                 activeStands.Add(stand);
+                stand.GetComponent<Collider>().enabled = true;
             }
         }
 

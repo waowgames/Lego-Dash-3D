@@ -1269,7 +1269,7 @@ Transform:
   m_GameObject: {fileID: 509403793}
   serializedVersion: 2
   m_LocalRotation: {x: 0.2588191, y: -0, z: -0, w: 0.9659258}
-  m_LocalPosition: {x: 0.98, y: 8.81, z: -5.3}
+  m_LocalPosition: {x: 0.98, y: 7.12, z: -5.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1332,7 +1332,7 @@ Transform:
   m_GameObject: {fileID: 552867781}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.3420201, z: 0, w: 0.9396927}
-  m_LocalPosition: {x: 1.22172, y: 0, z: 7.21}
+  m_LocalPosition: {x: 1.22172, y: 0, z: 5.66}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1378,7 +1378,7 @@ Transform:
   m_GameObject: {fileID: 614341020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.97, y: 0, z: 2.46}
+  m_LocalPosition: {x: 0.97, y: 0, z: 0.9100001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1681,7 +1681,7 @@ Transform:
   m_GameObject: {fileID: 909538728}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.61, y: 0, z: -1.29}
+  m_LocalPosition: {x: 0.61, y: 0, z: -2.84}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2752,6 +2752,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1809080344}
+  - component: {fileID: 1809080345}
   m_Layer: 0
   m_Name: Stand Zones
   m_TagString: Untagged
@@ -2768,7 +2769,7 @@ Transform:
   m_GameObject: {fileID: 1809080343}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.3900001}
+  m_LocalPosition: {x: 0, y: 0, z: -1.94}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2788,8 +2789,45 @@ Transform:
   - {fileID: 153763087}
   - {fileID: 1455566541}
   - {fileID: 450419390}
+  - {fileID: 1931837680}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1809080345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1809080343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f5c30c26e8d36d44abfacf65f4f6708, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StandZonesPlacement
+  _stands:
+  - {fileID: 1863538518}
+  - {fileID: 1699595466}
+  - {fileID: 1368659895}
+  - {fileID: 983767796}
+  - {fileID: 1040356854}
+  - {fileID: 1932636032}
+  - {fileID: 915258395}
+  - {fileID: 1316864826}
+  - {fileID: 1148564506}
+  - {fileID: 1455390526}
+  - {fileID: 1699493318}
+  - {fileID: 419473107}
+  - {fileID: 2029916776}
+  - {fileID: 153763089}
+  - {fileID: 1652560646}
+  - {fileID: 450419392}
+  _spacingX: 1
+  _spacingZ: 4
+  _centerAnchor: {fileID: 1931837680}
+  _centerPoint: {x: 0, y: 0, z: 0}
+  _keepY: 1
+  _animate: 1
+  _animDuration: 0.35
 --- !u!4 &1863538516 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6204408893846809209, guid: e7c6b2176273c9a449f462a8322a851d, type: 3}
@@ -2806,6 +2844,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec4434d4db8838640a284aa3722da277, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StandController
+--- !u!1 &1931837679
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1931837680}
+  m_Layer: 0
+  m_Name: Center
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1931837680
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1931837679}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.91, y: 0, z: -7.49}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1809080344}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1932636029
 PrefabInstance:
   m_ObjectHideFlags: 0
