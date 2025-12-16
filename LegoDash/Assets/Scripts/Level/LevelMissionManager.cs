@@ -10,6 +10,7 @@ public class LevelMissionManager : SingletonMonoBehaviour<LevelMissionManager>
 {
     [SerializeField] private List<LevelConfig> levels = new();
     [SerializeField] private int startingLevelIndex = 0;
+    [SerializeField] private bool resumeFromSavedProgress = true;
     [SerializeField] private bool autoStart = true;
     [SerializeField] private bool autoAdvanceOnSuccess = false;
     [SerializeField] private float advanceDelaySeconds = 0.75f;
@@ -36,7 +37,7 @@ public class LevelMissionManager : SingletonMonoBehaviour<LevelMissionManager>
     {
         if (autoStart)
         {
-            LoadLevel(Mathf.Clamp(startingLevelIndex, 0, Mathf.Max(0, levels.Count - 1)));
+            LoadLevel(GetInitialLevelIndex());
         }
     }
 
@@ -73,6 +74,18 @@ public class LevelMissionManager : SingletonMonoBehaviour<LevelMissionManager>
         AdvanceToNextLevel();
     }
 
+    private int GetInitialLevelIndex()
+    {
+        int fallback = Mathf.Clamp(startingLevelIndex, 0, Mathf.Max(0, levels.Count - 1));
+        if (!resumeFromSavedProgress)
+        {
+            return fallback;
+        }
+
+        int saved = ProgressPrefs.GetCurrentLevelOr(fallback);
+        return Mathf.Clamp(saved, 0, Mathf.Max(0, levels.Count - 1));
+    }
+
     private void LoadLevel(int index)
     {
         if (levels.Count == 0)
@@ -84,6 +97,7 @@ public class LevelMissionManager : SingletonMonoBehaviour<LevelMissionManager>
         int clampedIndex = Mathf.Clamp(index, 0, levels.Count - 1);
         CurrentLevelIndex = clampedIndex;
         CurrentLevelConfig = levels[clampedIndex];
+        ProgressPrefs.SetCurrentLevel(CurrentLevelIndex);
 
         if (CurrentLevelConfig == null)
         {
