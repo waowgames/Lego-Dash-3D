@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5808985307862300046}
   m_Layer: 0
-  m_Name: Castle
+  m_Name: LV2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -54,7 +54,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: effb450f16e714285a1299c20a871fe8, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0
+      value: 0.30070582
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: effb450f16e714285a1299c20a871fe8, type: 3}
       propertyPath: m_LocalRotation.x
@@ -62,7 +62,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: effb450f16e714285a1299c20a871fe8, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 1
+      value: -0.95371693
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: effb450f16e714285a1299c20a871fe8, type: 3}
       propertyPath: m_LocalRotation.z
@@ -74,7 +74,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: effb450f16e714285a1299c20a871fe8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 180
+      value: -145
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: effb450f16e714285a1299c20a871fe8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
