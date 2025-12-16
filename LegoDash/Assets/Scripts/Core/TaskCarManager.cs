@@ -56,6 +56,8 @@ public class TaskCarManager : MonoBehaviour
 
     public event Action<TaskCar> OnActiveCarChanged;
     public event Action OnAllCarsCompleted;
+    public event Action OnConvoyMovementStarted;
+    public event Action OnConvoyMovementCompleted;
 
     public void SetConstruction(Construction construction)
     {
@@ -123,6 +125,7 @@ public class TaskCarManager : MonoBehaviour
     private IEnumerator AdvanceConvoyCoroutine(TaskCar completedCar)
     {
         _isAdvancing = true;
+        OnConvoyMovementStarted?.Invoke();
         completedCar.SetActive(false);
 
         if (_construction != null)
@@ -161,6 +164,7 @@ public class TaskCarManager : MonoBehaviour
         }
 
         _isAdvancing = false;
+        OnConvoyMovementCompleted?.Invoke();
 
         if (_cars.Count == 0)
         {
