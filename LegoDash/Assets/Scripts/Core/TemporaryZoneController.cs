@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using DG.Tweening;
 using UnityEngine;
 
@@ -19,6 +20,10 @@ public class TemporaryZoneController : MonoBehaviour
     [Tooltip("Optional explicit slot positions used to lay out stored bricks (e.g. horizontally).")]
     [SerializeField]
     private List<Transform> _slotPositions = new();
+
+    [Tooltip("Optional parent used to auto-discover additional slot positions.")]
+    [SerializeField]
+    private Transform _slotPositionsRoot;
 
     [Tooltip("Seconds it takes for a brick to travel into the temporary zone.")]
     [SerializeField]
@@ -44,7 +49,11 @@ public class TemporaryZoneController : MonoBehaviour
     [SerializeField]
     private float _brickHeightSpacing = 0.25f;
 
+    private readonly List<Transform> _addedSlots = new();
     private readonly List<Brick> _storedBricks = new();
+    private int _baseCapacity;
+    private int _baseSlotCount;
+    private List<Transform> _orderedSlotPositions = new();
 
     public int MaxCapacity => _maxCapacity;
     public int CurrentCount => _storedBricks.Count;
@@ -105,6 +114,9 @@ public class TemporaryZoneController : MonoBehaviour
 
     public void ResetZone()
     {
+        RemoveExtraSlots();
+        RestoreOriginalCapacity();
+
         foreach (var brick in _storedBricks)
         {
             if (brick.Instance != null)
@@ -118,7 +130,75 @@ public class TemporaryZoneController : MonoBehaviour
 
     public void SetCapacity(int capacity)
     {
-        _maxCapacity = Mathf.Max(1, capacity);
+        _baseCapacity = Mathf.Max(1, capacity);
+        _maxCapacity = _baseCapacity + _addedSlots.Count;
+    }
+
+    public void RestoreOriginalCapacity()
+    {
+        _maxCapacity = Mathf.Max(1, _baseCapacity);
+    }
+
+    public bool AddExtraSlots(int count)
+    {
+        if (count <= 0 || _addedSlots.Count > 0)
+        {
+            return false;
+        }
+
+        CacheOrderedSlots();
+
+        var availableSlots = _orderedSlotPositions
+            .Where(slot => slot != null && !_slotPositions.Contains(slot))
+            .ToList();
+
+        if (availableSlots.Count == 0)
+        {
+            Debug.LogWarning("TemporaryZoneController: No spare slot positions available for expansion.");
+            return false;
+        }
+
+        int toAdd = Mathf.Clamp(count, 0, availableSlots.Count);
+        var slotsToAppend = availableSlots.Take(toAdd).ToList();
+
+        _slotPositions.AddRange(slotsToAppend);
+        _addedSlots.AddRange(slotsToAppend);
+
+        _maxCapacity = _baseCapacity + _addedSlots.Count;
+        return _addedSlots.Count > 0;
+    }
+
+    public void RemoveExtraSlots()
+    {
+        if (_addedSlots.Count == 0 && _slotPositions.Count <= _baseSlotCount)
+        {
+            return;
+        }
+
+        int slotLimit = _baseSlotCount > 0 ? _baseSlotCount : _slotPositions.Count;
+        int targetCapacity = Mathf.Max(0, Mathf.Min(_baseCapacity, slotLimit));
+        if (_storedBricks.Count > targetCapacity)
+        {
+            for (int i = targetCapacity; i < _storedBricks.Count; i++)
+            {
+                var brick = _storedBricks[i];
+                if (brick?.Instance != null)
+                {
+                    Destroy(brick.Instance);
+                }
+            }
+
+            _storedBricks.RemoveRange(targetCapacity, _storedBricks.Count - targetCapacity);
+        }
+
+        if (_slotPositions.Count > _baseSlotCount)
+        {
+            _slotPositions.RemoveRange(_baseSlotCount, _slotPositions.Count - _baseSlotCount);
+        }
+
+        _addedSlots.Clear();
+        RestoreOriginalCapacity();
+        StartCoroutine(ReflowStoredBricks());
     }
 
     private IEnumerator MoveBricksToStorage(List<Brick> bricks, int startIndex)
@@ -217,5 +297,34 @@ public class TemporaryZoneController : MonoBehaviour
         }
 
         return _maxCapacity;
+    }
+
+    private void Awake()
+    {
+        _baseCapacity = Mathf.Max(1, _maxCapacity);
+        _baseSlotCount = _slotPositions.Count;
+        CacheOrderedSlots();
+    }
+
+    private void CacheOrderedSlots()
+    {
+        if (_slotPositionsRoot == null && _slotPositions.Count > 0)
+        {
+            _slotPositionsRoot = _slotPositions[0].parent;
+        }
+
+        _orderedSlotPositions.Clear();
+
+        if (_slotPositionsRoot != null)
+        {
+            for (int i = 0; i < _slotPositionsRoot.childCount; i++)
+            {
+                _orderedSlotPositions.Add(_slotPositionsRoot.GetChild(i));
+            }
+        }
+        else
+        {
+            _orderedSlotPositions.AddRange(_slotPositions);
+        }
     }
 }
