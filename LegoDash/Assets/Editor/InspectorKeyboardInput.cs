@@ -19,6 +19,11 @@ public class InspectorKeyboardInput
 
     static void EditorGlobalKeyPress()
     {
+        if (Event.current == null || Event.current.type != EventType.KeyDown)
+        {
+            return;
+        }
+
         switch (Event.current.keyCode)
         {
             case KeyCode.F7:
@@ -34,6 +39,36 @@ public class InspectorKeyboardInput
             case KeyCode.Alpha7:
                 UIManager.Instance.ScoreAdd(-500);
                 break;
+            case KeyCode.K:
+                if (!EditorApplication.isPlaying)
+                {
+                    Debug.Log("Inspector shortcut K ignored because the editor is not in play mode.");
+                    break;
+                }
+
+                if (!TryGetLevelMissionManager(out var levelMissionManager))
+                {
+                    break;
+                }
+
+                Debug.Log("Inspector shortcut K pressed; advancing to the next level.");
+                levelMissionManager.AdvanceToNextLevel();
+                break;
+            case KeyCode.J:
+                if (!EditorApplication.isPlaying)
+                {
+                    Debug.Log("Inspector shortcut J ignored because the editor is not in play mode.");
+                    break;
+                }
+
+                if (!TryGetLevelMissionManager(out var previousLevelMissionManager))
+                {
+                    break;
+                }
+
+                Debug.Log("Inspector shortcut J pressed; returning to the previous level.");
+                previousLevelMissionManager.ReturnToPreviousLevel();
+                break;
 
             case KeyCode.F1:
                 PlayerPrefs.DeleteAll();
@@ -41,5 +76,26 @@ public class InspectorKeyboardInput
             default:
                 break;
         }
+    }
+
+    private static bool TryGetLevelMissionManager(out LevelMissionManager manager)
+    {
+        manager = null;
+
+        if (LevelMissionManager.Instance != null)
+        {
+            manager = LevelMissionManager.Instance;
+            return true;
+        }
+
+        manager = Object.FindObjectOfType<LevelMissionManager>();
+        if (manager != null)
+        {
+            Debug.LogWarning("Inspector shortcut found a LevelMissionManager via FindObjectOfType because the singleton instance was null.");
+            return true;
+        }
+
+        Debug.LogWarning("Inspector shortcut pressed but no LevelMissionManager exists in the scene.");
+        return false;
     }
 }

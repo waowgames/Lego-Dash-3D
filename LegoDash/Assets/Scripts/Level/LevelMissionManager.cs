@@ -58,6 +58,18 @@ public class LevelMissionManager : SingletonMonoBehaviour<LevelMissionManager>
         LoadLevel(nextIndex);
     }
 
+    public void ReturnToPreviousLevel()
+    {
+        if (levels.Count == 0)
+        {
+            Debug.LogWarning("ReturnToPreviousLevel called but level list is empty.");
+            return;
+        }
+
+        int previousIndex = Mathf.Clamp(CurrentLevelIndex - 1, 0, levels.Count - 1);
+        LoadLevel(previousIndex);
+    }
+
     private void HandleLevelEnded(LevelEndPayload payload)
     {
         if (!autoAdvanceOnSuccess || !payload.Success)
