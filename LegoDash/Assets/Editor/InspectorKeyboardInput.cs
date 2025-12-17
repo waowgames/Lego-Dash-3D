@@ -19,6 +19,11 @@ public class InspectorKeyboardInput
 
     static void EditorGlobalKeyPress()
     {
+        if (Event.current == null || Event.current.type != EventType.KeyDown)
+        {
+            return;
+        }
+
         switch (Event.current.keyCode)
         {
             case KeyCode.F7:
@@ -35,10 +40,16 @@ public class InspectorKeyboardInput
                 UIManager.Instance.ScoreAdd(-500);
                 break;
             case KeyCode.K:
-                LevelMissionManager.Instance?.AdvanceToNextLevel();
+                if (EditorApplication.isPlaying && LevelMissionManager.Instance != null)
+                {
+                    LevelMissionManager.Instance.AdvanceToNextLevel();
+                }
                 break;
             case KeyCode.J:
-                LevelMissionManager.Instance?.ReturnToPreviousLevel();
+                if (EditorApplication.isPlaying && LevelMissionManager.Instance != null)
+                {
+                    LevelMissionManager.Instance.ReturnToPreviousLevel();
+                }
                 break;
 
             case KeyCode.F1:
