@@ -34,6 +34,12 @@ public class InspectorKeyboardInput
             case KeyCode.Alpha7:
                 UIManager.Instance.ScoreAdd(-500);
                 break;
+            case KeyCode.K:
+                LevelMissionManager.Instance?.AdvanceToNextLevel();
+                break;
+            case KeyCode.J:
+                LevelMissionManager.Instance?.ReturnToPreviousLevel();
+                break;
 
             case KeyCode.F1:
                 PlayerPrefs.DeleteAll();
