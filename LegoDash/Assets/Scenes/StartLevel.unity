@@ -2910,7 +2910,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: levels.Array.size
-      value: 3
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: 'levels.Array.data[0]'
@@ -2919,11 +2919,19 @@ PrefabInstance:
     - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: 'levels.Array.data[1]'
       value: 
-      objectReference: {fileID: 11400000, guid: d110c26f23b442a4c8939b0a5efd8905, type: 2}
+      objectReference: {fileID: 11400000, guid: 455dec2f2c3bd5e43a5c3c3de49fa5dd, type: 2}
     - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: 'levels.Array.data[2]'
       value: 
-      objectReference: {fileID: 11400000, guid: 455dec2f2c3bd5e43a5c3c3de49fa5dd, type: 2}
+      objectReference: {fileID: 11400000, guid: d110c26f23b442a4c8939b0a5efd8905, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[3]'
+      value: 
+      objectReference: {fileID: 11400000, guid: fb8046228b7014b489e5cbcd7e6d0af2, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[4]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 01b40295362223e4ebf060ea6af15af6, type: 2}
     - target: {fileID: 7303356749682882291, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: m_Name
       value: UI Manager
