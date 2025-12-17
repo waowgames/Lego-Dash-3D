@@ -40,16 +40,39 @@ public class InspectorKeyboardInput
                 UIManager.Instance.ScoreAdd(-500);
                 break;
             case KeyCode.K:
+                if (!EditorApplication.isPlaying)
+                {
+                    Debug.Log("Inspector shortcut K ignored because the editor is not in play mode.");
+                    break;
+                }
+
+                if (LevelMissionManager.Instance == null)
+                {
+                    Debug.LogWarning("Inspector shortcut K pressed but LevelMissionManager instance is missing.");
+                    break;
+                }
+
+                Debug.Log("Inspector shortcut K pressed; advancing to the next level.");
                 if (EditorApplication.isPlaying && LevelMissionManager.Instance != null)
                 {
                     LevelMissionManager.Instance.AdvanceToNextLevel();
                 }
                 break;
             case KeyCode.J:
-                if (EditorApplication.isPlaying && LevelMissionManager.Instance != null)
+                if (!EditorApplication.isPlaying)
                 {
-                    LevelMissionManager.Instance.ReturnToPreviousLevel();
+                    Debug.Log("Inspector shortcut J ignored because the editor is not in play mode.");
+                    break;
                 }
+
+                if (LevelMissionManager.Instance == null)
+                {
+                    Debug.LogWarning("Inspector shortcut J pressed but LevelMissionManager instance is missing.");
+                    break;
+                }
+
+                Debug.Log("Inspector shortcut J pressed; returning to the previous level.");
+                LevelMissionManager.Instance.ReturnToPreviousLevel();
                 break;
 
             case KeyCode.F1:
