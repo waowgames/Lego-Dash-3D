@@ -61,13 +61,13 @@ public class InspectorKeyboardInput
                     break;
                 }
 
-                if (!TryGetLevelMissionManager(out var levelMissionManager))
+                if (!TryGetLevelMissionManager(out var previousLevelMissionManager))
                 {
                     break;
                 }
 
                 Debug.Log("Inspector shortcut J pressed; returning to the previous level.");
-                levelMissionManager.ReturnToPreviousLevel();
+                previousLevelMissionManager.ReturnToPreviousLevel();
                 break;
 
             case KeyCode.F1:
