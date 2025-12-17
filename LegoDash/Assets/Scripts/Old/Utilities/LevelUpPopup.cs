@@ -46,7 +46,7 @@ public class LevelUpPopup : MonoBehaviour
         if (_isShowing) return;
 
         _onMissionConfirmed = onConfirmed;
-        _pendingReward = Mathf.Max(1, (LevelManager.Instance?.CurrentLevelIndex ?? 0) * 3);
+        _pendingReward = Mathf.Max(10, (LevelManager.Instance?.CurrentLevelIndex ?? 0) * 10);
 
         levelText.text = $"LEVEL {Mathf.Max(1, displayedLevel)}";
         rewardAmountText.text = $"+{_pendingReward}";
@@ -85,7 +85,6 @@ public class LevelUpPopup : MonoBehaviour
         FlyToUIEffect.Instance.Play(() =>
         {
             callback.Invoke();
-
             getButton.enabled = true;
             Hide();
         }, _pendingReward);
