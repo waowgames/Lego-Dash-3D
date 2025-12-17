@@ -1404,6 +1404,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ConstructionManager
   _fallbackConstructionPrefab: {fileID: 0}
   _constructionParent: {fileID: 552867783}
+--- !u!1 &610423588 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5936799942486957829, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+  m_PrefabInstance: {fileID: 1459854944}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &614341020
 GameObject:
   m_ObjectHideFlags: 0
@@ -2957,6 +2962,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 509403794}
     - target: {fileID: 8552283131531707407, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: gameplayObjects.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8552283131531707407, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: 'gameplayObjects.Array.data[0]'
       value: 
       objectReference: {fileID: 1809080343}
@@ -2968,6 +2977,10 @@ PrefabInstance:
       propertyPath: 'gameplayObjects.Array.data[2]'
       value: 
       objectReference: {fileID: 501343122}
+    - target: {fileID: 8552283131531707407, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'gameplayObjects.Array.data[3]'
+      value: 
+      objectReference: {fileID: 610423588}
     - target: {fileID: 9164304886976461349, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
