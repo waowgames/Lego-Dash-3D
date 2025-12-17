@@ -1,4 +1,5 @@
 using System;
+using AssetKits.ParticleImage;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -24,6 +25,8 @@ public class LevelUpPopup : MonoBehaviour
 
     private Canvas _canvas;
 
+    [SerializeField] private ParticleImage particleImage;
+    
 
     private void Awake()
     {
@@ -78,6 +81,7 @@ public class LevelUpPopup : MonoBehaviour
         // Önce uçuş efekti, bitince para ekle + kapat
         getButton.enabled = false;
         var callback = _onMissionConfirmed ?? (() => LevelManager.Instance?.NextLevel());
+        particleImage.Play();
         FlyToUIEffect.Instance.Play(() =>
         {
             callback.Invoke();
@@ -85,6 +89,7 @@ public class LevelUpPopup : MonoBehaviour
             getButton.enabled = true;
             Hide();
         }, _pendingReward);
+  
     }
 
     private void Reward2XBbuttonClicked()
@@ -92,6 +97,7 @@ public class LevelUpPopup : MonoBehaviour
         // Önce uçuş efekti, bitince para ekle + kapat
         getButton.enabled = false;
         var callback = _onMissionConfirmed ?? (() => LevelManager.Instance?.NextLevel());
+        particleImage.Play();
         FlyToUIEffect.Instance.Play(() =>
         {
             callback.Invoke();
