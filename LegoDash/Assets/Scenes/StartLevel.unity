@@ -2926,7 +2926,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: levels.Array.size
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: 'levels.Array.data[0]'
@@ -2948,6 +2948,10 @@ PrefabInstance:
       propertyPath: 'levels.Array.data[4]'
       value: 
       objectReference: {fileID: 11400000, guid: 01b40295362223e4ebf060ea6af15af6, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[5]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 2c920da8ac79d12449f74a82a18d6401, type: 2}
     - target: {fileID: 3560340676485382320, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0

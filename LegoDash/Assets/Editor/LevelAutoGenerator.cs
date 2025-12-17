@@ -14,8 +14,8 @@ public enum LevelDifficulty
 public static class LevelAutoGenerator
 {
     public const int StandMin = 6;
-    public const int StandMax = 10;
-    public const int MaxBricksPerStand = 10;
+    public const int StandMax = 16;
+    public const int MaxBricksPerStand = 13;
     public const int TaskChunkSize = 9;
     public const int ColorBlockSize = 9;
 
