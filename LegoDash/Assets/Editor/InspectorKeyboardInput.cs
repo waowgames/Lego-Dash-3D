@@ -46,17 +46,13 @@ public class InspectorKeyboardInput
                     break;
                 }
 
-                if (LevelMissionManager.Instance == null)
+                if (!TryGetLevelMissionManager(out var levelMissionManager))
                 {
-                    Debug.LogWarning("Inspector shortcut K pressed but LevelMissionManager instance is missing.");
                     break;
                 }
 
                 Debug.Log("Inspector shortcut K pressed; advancing to the next level.");
-                if (EditorApplication.isPlaying && LevelMissionManager.Instance != null)
-                {
-                    LevelMissionManager.Instance.AdvanceToNextLevel();
-                }
+                levelMissionManager.AdvanceToNextLevel();
                 break;
             case KeyCode.J:
                 if (!EditorApplication.isPlaying)
@@ -65,14 +61,13 @@ public class InspectorKeyboardInput
                     break;
                 }
 
-                if (LevelMissionManager.Instance == null)
+                if (!TryGetLevelMissionManager(out var levelMissionManager))
                 {
-                    Debug.LogWarning("Inspector shortcut J pressed but LevelMissionManager instance is missing.");
                     break;
                 }
 
                 Debug.Log("Inspector shortcut J pressed; returning to the previous level.");
-                LevelMissionManager.Instance.ReturnToPreviousLevel();
+                levelMissionManager.ReturnToPreviousLevel();
                 break;
 
             case KeyCode.F1:
@@ -81,5 +76,26 @@ public class InspectorKeyboardInput
             default:
                 break;
         }
+    }
+
+    private static bool TryGetLevelMissionManager(out LevelMissionManager manager)
+    {
+        manager = null;
+
+        if (LevelMissionManager.Instance != null)
+        {
+            manager = LevelMissionManager.Instance;
+            return true;
+        }
+
+        manager = Object.FindObjectOfType<LevelMissionManager>();
+        if (manager != null)
+        {
+            Debug.LogWarning("Inspector shortcut found a LevelMissionManager via FindObjectOfType because the singleton instance was null.");
+            return true;
+        }
+
+        Debug.LogWarning("Inspector shortcut pressed but no LevelMissionManager exists in the scene.");
+        return false;
     }
 }
