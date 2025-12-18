@@ -123,6 +123,13 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         BuildStandsFromConfig(config);
         BuildTasksFromConfig(config);
         MoveTemporaryMatches();
+
+        // LevelMissionManager yoksa, LevelManager'ı manuel başlat ki deneme sayısı,
+        // timer ve event akışı her yeniden başlatmada doğru sıfırlansın.
+        if (LevelMissionManager.Instance == null && LevelManager.Instance != null)
+        {
+            LevelManager.Instance.BeginLevel(config, levelIndex);
+        }
     }
 
     public void RestartActiveLevel()
@@ -370,6 +377,9 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         _levelFailed = true;
         Debug.LogError("Temporary Zone overflow. Level failed.");
         LevelManager.Instance?.FailLevel();
+
+        // Emniyet: LevelEnded event'i tetiklenmezse bile başarısızlık popup'ı açılsın.
+        LevelFailPopup.Instance?.Show();
     }
 
     public void SetInputLocked(bool locked)

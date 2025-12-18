@@ -24,6 +24,8 @@ public class LevelFailPopup : MonoBehaviour
     private bool _isShowing;
     private Canvas _canvas;
 
+    public bool IsShowing => _isShowing;
+
     private void Awake()
     {
         Instance = this;
@@ -70,11 +72,14 @@ public class LevelFailPopup : MonoBehaviour
 
     public void Show()
     {
+        if (_isShowing) return;
         _isShowing = true;
 
         if (_canvas != null) _canvas.enabled = true;
         if (rootCg != null)
         {
+            rootCg.DOKill();
+            rootCg.alpha = 0f;
             rootCg.DOFade(1f, fadeTime).SetUpdate(true);
             rootCg.interactable = true;
             rootCg.blocksRaycasts = true;
