@@ -377,6 +377,9 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         _levelFailed = true;
         Debug.LogError("Temporary Zone overflow. Level failed.");
         LevelManager.Instance?.FailLevel();
+
+        // Emniyet: LevelEnded event'i tetiklenmezse bile başarısızlık popup'ı açılsın.
+        LevelFailPopup.Instance?.Show();
     }
 
     public void SetInputLocked(bool locked)
