@@ -104,6 +104,10 @@ public class LevelManager : MonoBehaviour
 
     public void BeginLevel(LevelConfig config, int levelIndex)
     {
+        // Bir önceki level bitirme coroutine'i (ör. EndLevelWithDelay) devam ediyorsa
+        // yeni denemeye taşmaması için durdur.
+        StopAllCoroutines();
+
         State = LevelState.Idle;
         CurrentLevelConfig = config;
         CurrentLevelIndex = Mathf.Max(0, levelIndex);
