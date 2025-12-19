@@ -50,7 +50,9 @@ public class LevelMissionManager : SingletonMonoBehaviour<LevelMissionManager>
     {
         if (levels.Count == 0)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("AdvanceToNextLevel called but level list is empty.");
+#endif
             return;
         }
 
@@ -62,7 +64,9 @@ public class LevelMissionManager : SingletonMonoBehaviour<LevelMissionManager>
     {
         if (levels.Count == 0)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("ReturnToPreviousLevel called but level list is empty.");
+#endif
             return;
         }
 
@@ -102,7 +106,9 @@ public class LevelMissionManager : SingletonMonoBehaviour<LevelMissionManager>
     {
         if (levels.Count == 0)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("Level list is empty; cannot load level.");
+#endif
             return;
         }
 
@@ -113,7 +119,9 @@ public class LevelMissionManager : SingletonMonoBehaviour<LevelMissionManager>
 
         if (CurrentLevelConfig == null)
         {
+#if UNITY_EDITOR
             Debug.LogWarning($"Level {clampedIndex} asset is missing.");
+#endif
             return;
         }
 

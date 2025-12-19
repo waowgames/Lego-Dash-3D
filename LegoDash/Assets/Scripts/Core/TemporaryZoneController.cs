@@ -154,7 +154,9 @@ public class TemporaryZoneController : MonoBehaviour
 
         if (availableSlots.Count == 0)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("TemporaryZoneController: No spare slot positions available for expansion.");
+#endif
             return false;
         }
 

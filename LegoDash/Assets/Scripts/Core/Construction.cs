@@ -66,7 +66,9 @@ public class Construction : MonoBehaviour
 
         if (_builtObjectRoot == null)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("BuiltObjectRoot bulunamadı.");
+#endif
             return;
         }
 

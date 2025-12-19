@@ -22,7 +22,9 @@ public class ConstructionManager : MonoBehaviour
 
         if (prefab == null)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("Aktif edilecek Construction prefab'ı bulunamadı.");
+#endif
             return null;
         }
 

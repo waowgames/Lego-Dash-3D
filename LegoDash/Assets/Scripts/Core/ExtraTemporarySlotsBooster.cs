@@ -41,7 +41,9 @@ public class ExtraTemporarySlotsBooster : MonoBehaviour
         EnsureZoneReference();
         if (_temporaryZone == null)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("ExtraTemporarySlotsBooster: Temporary zone not found.");
+#endif
             return;
         }
 

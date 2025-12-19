@@ -25,7 +25,9 @@ public class BoosterManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("BoosterManager: Another instance detected, destroying duplicate.");
+#endif
             Destroy(this);
             return;
         }
@@ -52,7 +54,9 @@ public class BoosterManager : MonoBehaviour
     {
         if (type == BoosterType.None)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("BoosterManager: Cannot activate 'None' booster type.");
+#endif
             return;
         }
 
@@ -60,7 +64,9 @@ public class BoosterManager : MonoBehaviour
 
         if (isSingleUse && IsBoosterActive(type))
         {
+#if UNITY_EDITOR
             Debug.Log($"BoosterManager: Booster '{type}' is already active.");
+#endif
             return;
         }
 
@@ -72,7 +78,9 @@ public class BoosterManager : MonoBehaviour
         {
             activeBoosters.Remove(type);
         }
+#if UNITY_EDITOR
         Debug.Log($"BoosterManager: Activated booster '{type}'.");
+#endif
         onBoosterActivated?.Invoke(type);
     }
 
