@@ -85,7 +85,12 @@ public class LevelManager : MonoBehaviour
             if (State == LevelState.Running)
             {
                 try { r.ResetForNewLevel(CurrentLevelIndex); }
-                catch (System.Exception e) { Debug.LogException(e); }
+                catch (System.Exception e)
+                {
+#if UNITY_EDITOR
+                    Debug.LogException(e);
+#endif
+                }
             }
         }
     }
@@ -120,7 +125,12 @@ public class LevelManager : MonoBehaviour
         foreach (var r in resettables)
         {
             try { r.ResetForNewLevel(CurrentLevelIndex); }
-            catch (System.Exception e) { Debug.LogException(e); }
+            catch (System.Exception e)
+            {
+#if UNITY_EDITOR
+                Debug.LogException(e);
+#endif
+            }
         }
 
         Events.RaiseLevelStarted(new LevelStartPayload

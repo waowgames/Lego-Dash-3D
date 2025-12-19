@@ -109,14 +109,18 @@ public class XPManager : SingletonMonoBehaviour<XPManager>
 
             if (threshold <= 0)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning(
                     "XP threshold değeri 0 veya negatif: Inspector'da xpThresholds değerlerini kontrol edin.");
+#endif
                 threshold = 1;
             }
         }
         else
         {
+#if UNITY_EDITOR
             Debug.LogWarning("xpThresholds dizisi boş veya null: Inspector'da değer atayın.");
+#endif
             threshold = Mathf.Max(currentXP, 1);
         }
 

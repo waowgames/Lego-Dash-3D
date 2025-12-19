@@ -98,11 +98,13 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         _currentLevelIndex = levelIndex;
 
         _temporaryZone?.ResetZone();
- 
+
 
         if (_constructionManager == null)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("ConstructionManager atanmadı; inşaat kurulumu atlanacak.");
+#endif
         }
 
         _activeConstruction = _constructionManager != null ? _constructionManager.InitializeForLevel(config) : null;
@@ -115,7 +117,9 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
         if (config == null)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("LevelConfig atanmadı; örnek kurulum kullanılmayacak.");
+#endif
             return;
         }
 
@@ -140,7 +144,9 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     {
         if (_currentLevelConfig == null)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("Restart requested but no level has been initialized.");
+#endif
             return;
         }
 
@@ -161,7 +167,9 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
         if (_stands.Count < standLayouts.Count)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("Sahnedeki stant sayısı LevelConfig içindeki tanımdan az.");
+#endif
         }
     }
 
@@ -348,7 +356,9 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         if (_activeConstruction == null)
         {
             _levelCompleted = true;
+#if UNITY_EDITOR
             Debug.Log("All tasks completed! Level clear.");
+#endif
             LevelManager.Instance?.CompleteLevel(true);
             return;
         }
@@ -367,7 +377,9 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         }
 
         _levelCompleted = true;
+#if UNITY_EDITOR
         Debug.Log("Construction finished! Level clear.");
+#endif
         LevelManager.Instance?.CompleteLevel(true);
     }
 
@@ -379,7 +391,9 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         }
 
         _levelFailed = true;
+#if UNITY_EDITOR
         Debug.LogError("Temporary Zone overflow. Level failed.");
+#endif
         LevelManager.Instance?.FailLevel();
 
         // Emniyet: LevelEnded event'i tetiklenmezse bile başarısızlık popup'ı açılsın.
@@ -400,7 +414,9 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             return prefab;
         }
 
+#if UNITY_EDITOR
         Debug.LogWarning($"Task car prefab for color {color} not found.");
+#endif
         return null;
     }
 }

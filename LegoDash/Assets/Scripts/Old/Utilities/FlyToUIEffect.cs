@@ -133,7 +133,9 @@ public class FlyToUIEffect : MonoBehaviour
     {
         if (coinPrefab == null || target == null)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("[FlyToUIEffect] coinPrefab veya target atanmamış.");
+#endif
             yield break;
         }
 

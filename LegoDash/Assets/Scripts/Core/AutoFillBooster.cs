@@ -47,7 +47,9 @@ public class AutoFillBooster : MonoBehaviour
 
         if (_taskCarManager == null)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("AutoFillBooster: TaskCarManager bulunamadı.");
+#endif
             _isRunning = false;
             yield break;
         }
@@ -55,7 +57,9 @@ public class AutoFillBooster : MonoBehaviour
         var taskCar = _taskCarManager.ActiveCar;
         if (taskCar == null)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("AutoFillBooster: Aktif TaskCar yok.");
+#endif
             _isRunning = false;
             yield break;
         }
@@ -63,7 +67,9 @@ public class AutoFillBooster : MonoBehaviour
         int remainingNeed = taskCar.RemainingNeed();
         if (remainingNeed <= 0)
         {
+#if UNITY_EDITOR
             Debug.Log("AutoFillBooster: Aktif görev zaten dolu.");
+#endif
             _isRunning = false;
             yield break;
         }
@@ -71,7 +77,9 @@ public class AutoFillBooster : MonoBehaviour
         var stands = GetActiveStands();
         if (stands.Count == 0)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("AutoFillBooster: Sahne üzerinde StandController bulunamadı.");
+#endif
             _isRunning = false;
             yield break;
         }
@@ -79,7 +87,9 @@ public class AutoFillBooster : MonoBehaviour
         var collected = CollectBricks(taskCar.TaskColor, remainingNeed, stands);
         if (collected.Count == 0)
         {
+#if UNITY_EDITOR
             Debug.Log("AutoFillBooster: Uygun renkte brick bulunamadı.");
+#endif
             _isRunning = false;
             yield break;
         }

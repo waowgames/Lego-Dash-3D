@@ -54,7 +54,9 @@ public class BoosterUIManager : MonoBehaviour
 
         if (adServiceProvider != null)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("BoosterUIManager: Assigned ad service does not implement IAdService.");
+#endif
         }
 
         foreach (var component in FindObjectsOfType<MonoBehaviour>(true))
@@ -67,7 +69,9 @@ public class BoosterUIManager : MonoBehaviour
             }
         }
 
+#if UNITY_EDITOR
         Debug.LogWarning("BoosterUIManager: No IAdService found. Ad flow will fail.");
+#endif
     }
 
     private void CacheBoosterManager()
@@ -138,7 +142,9 @@ public class BoosterUIManager : MonoBehaviour
 
             if (IsActive())
             {
+#if UNITY_EDITOR
                 Debug.Log("BoosterUIManager: Booster already active, ignoring click.");
+#endif
                 SetActive();
                 return;
             }
@@ -146,14 +152,18 @@ public class BoosterUIManager : MonoBehaviour
             var service = owner.GetAdService();
             if (service == null)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning("BoosterUIManager: No ad service available.");
+#endif
                 return;
             }
 
             string placement = boosterType.ToString();
             if (!service.IsAdReady(placement))
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"BoosterUIManager: Ad not ready for placement '{placement}'.");
+#endif
                 return;
             }
 
@@ -164,7 +174,9 @@ public class BoosterUIManager : MonoBehaviour
         {
             isLoading = true;
             SetLoading();
+#if UNITY_EDITOR
             Debug.Log($"BoosterUIManager: Starting ad for booster '{boosterType}'.");
+#endif
 
             service.ShowRewarded(
                 placement,
@@ -175,14 +187,18 @@ public class BoosterUIManager : MonoBehaviour
         private void OnAdSuccess()
         {
             isLoading = false;
+#if UNITY_EDITOR
             Debug.Log($"BoosterUIManager: Ad success for booster '{boosterType}'. Activating booster.");
+#endif
             ActivateBooster();
         }
 
         private void OnAdFailed()
         {
             isLoading = false;
+#if UNITY_EDITOR
             Debug.LogWarning($"BoosterUIManager: Ad failed or cancelled for booster '{boosterType}'.");
+#endif
             SetIdle();
         }
 
@@ -195,7 +211,9 @@ public class BoosterUIManager : MonoBehaviour
             }
             else
             {
+#if UNITY_EDITOR
                 Debug.LogWarning("BoosterUIManager: No BoosterManager available to activate booster.");
+#endif
             }
 
             onBoosterTriggered?.Invoke();

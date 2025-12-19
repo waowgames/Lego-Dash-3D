@@ -16,7 +16,9 @@ public class MockAdService : MonoBehaviour, IAdService
     {
         if (!isActiveAndEnabled)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("MockAdService: Component disabled, cannot show ad.");
+#endif
             onFail?.Invoke();
             return;
         }
@@ -27,13 +29,17 @@ public class MockAdService : MonoBehaviour, IAdService
     private IEnumerator SimulateRewardedAd(string placement, Action onSuccess, Action onFail)
     {
         float waitTime = UnityEngine.Random.Range(waitTimeRange.x, waitTimeRange.y);
+#if UNITY_EDITOR
         Debug.Log($"MockAdService: Showing rewarded ad for placement '{placement}'.");
+#endif
         yield return new WaitForSeconds(waitTime);
 
         bool success = UnityEngine.Random.value <= successChance;
+#if UNITY_EDITOR
         Debug.Log(success
             ? $"MockAdService: Rewarded ad for '{placement}' finished successfully."
             : $"MockAdService: Rewarded ad for '{placement}' failed or was skipped.");
+#endif
 
         if (success)
         {

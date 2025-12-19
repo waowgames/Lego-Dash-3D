@@ -70,7 +70,9 @@ public class TaskCarManager : MonoBehaviour
 
         if (_taskCarPrefab == null)
         {
+#if UNITY_EDITOR
             Debug.LogWarning("TaskCar prefab eksik.");
+#endif
             OnActiveCarChanged?.Invoke(null);
             OnAllCarsCompleted?.Invoke();
             return;
