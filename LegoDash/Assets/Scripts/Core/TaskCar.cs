@@ -162,6 +162,7 @@ public class TaskCar : MonoBehaviour
         {
             _incomingBricksCount = Mathf.Max(0, _incomingBricksCount - 1);
             _placedBricks.Add(arrivedBrick);
+            Vibration.Vibrate();
             if (!completionTriggered && IsCompleted)
             {
                 completionTriggered = true;

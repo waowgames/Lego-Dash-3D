@@ -234,7 +234,7 @@ public class TemporaryZoneController : MonoBehaviour
 
         brickTransform.DOKill();
         var startingRotation = brickTransform.rotation;
-
+        Vibration.Vibrate();
         var sequence = DOTween.Sequence();
         sequence.Join(brickTransform
             .DOJump(targetPosition, _jumpPower, 1, _moveDuration)

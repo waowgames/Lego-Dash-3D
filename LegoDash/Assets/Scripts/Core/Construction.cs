@@ -102,7 +102,9 @@ public class Construction : MonoBehaviour
                 if (targetPiece != null)
                 {
                     targetPiece.gameObject.SetActive(true);
+                    Vibration.Vibrate();
                     PlayPieceRevealAnimation(targetPiece);
+                    SoundManager.Instance.PlaySfx(GameManager.Instance.brickPlacementSound);
                     openedPieces++;
                 }
 

@@ -28,6 +28,9 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
     [SerializeField] private bool _startLevelOnStart = true;
 
+    public AudioClip brickPlacementSound;
+    
+
     private Dictionary<BrickColor, GameObject> _prefabLookup;
     private Dictionary<BrickColor, GameObject> _taskCarPrefabLookup;
     private bool _levelFailed;

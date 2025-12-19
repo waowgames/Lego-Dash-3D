@@ -58,11 +58,12 @@ public class LevelCompletionFlow : MonoBehaviour
         yield return SwitchToConstructionCamera();
 
         var construction = gameManager != null ? gameManager.ActiveConstruction : null;
-        if (construction != null)
-        {
-            yield return construction.PlayCompletionCelebration(celebrationPieceDelay, celebrationPunchStrength,
-                celebrationDuration);
-        }
+        // if (construction != null)
+        // {
+        //     yield return construction.PlayCompletionCelebration(celebrationPieceDelay, celebrationPunchStrength,
+        //         celebrationDuration);
+        // }
+        yield return new WaitForSeconds(2.7f);
 
         yield return ShowLevelUpPopup();
     }
