@@ -2954,7 +2954,7 @@ PrefabInstance:
       objectReference: {fileID: 11400000, guid: 0738c3e89a6a2aa419d935d487d78812, type: 2}
     - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: levels.Array.size
-      value: 16
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: 'levels.Array.data[0]'
@@ -3020,6 +3020,22 @@ PrefabInstance:
       propertyPath: 'levels.Array.data[15]'
       value: 
       objectReference: {fileID: 11400000, guid: 8bca25adfbf31434b9b182bd7cb7463c, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[16]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 8bca25adfbf31434b9b182bd7cb7463c, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[17]'
+      value: 
+      objectReference: {fileID: 11400000, guid: eb0d5a537bfaeac4b80c79b50df16762, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[18]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 8a2c7d9b6476d9e4d94dda529425d055, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[19]'
+      value: 
+      objectReference: {fileID: 11400000, guid: fe71318f5b934ae4abd3bf700a37f8de, type: 2}
     - target: {fileID: 1606187149990632668, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: m_fontAsset
       value: 
@@ -3414,14 +3430,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: dbb36f84096826240ac64aed3818567d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
