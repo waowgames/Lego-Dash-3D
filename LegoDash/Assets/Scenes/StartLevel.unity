@@ -2931,6 +2931,10 @@ PrefabInstance:
       value: ExtraTemporarySlotsBooster, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 730102778199589528, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: boosterSlots.Array.data[1].onBoosterTriggered.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_FloatArgument
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 730102778199589528, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: boosterSlots.Array.data[0].onBoosterTriggered.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
