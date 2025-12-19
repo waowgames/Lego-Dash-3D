@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
+using Solo.MOST_IN_ONE;
 using UnityEngine;
 
 /// <summary>
@@ -236,7 +237,7 @@ public class TemporaryZoneController : MonoBehaviour
 
         brickTransform.DOKill();
         var startingRotation = brickTransform.rotation;
-        Vibration.Vibrate();
+        MOST_HapticFeedback.GenerateWithCooldown(MOST_HapticFeedback.HapticTypes.Selection,.02f);
         var sequence = DOTween.Sequence();
         sequence.Join(brickTransform
             .DOJump(targetPosition, _jumpPower, 1, _moveDuration)

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using Solo.MOST_IN_ONE;
 using UnityEngine;
 
 /// <summary>
@@ -162,7 +163,7 @@ public class TaskCar : MonoBehaviour
         {
             _incomingBricksCount = Mathf.Max(0, _incomingBricksCount - 1);
             _placedBricks.Add(arrivedBrick);
-            Vibration.Vibrate();
+            MOST_HapticFeedback.GenerateWithCooldown(MOST_HapticFeedback.HapticTypes.Selection,.02f);
             if (!completionTriggered && IsCompleted)
             {
                 completionTriggered = true;

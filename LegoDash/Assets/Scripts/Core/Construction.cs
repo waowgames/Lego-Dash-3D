@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using Solo.MOST_IN_ONE;
 using UnityEngine;
 
 /// <summary>
@@ -10,39 +11,27 @@ using UnityEngine;
 /// </summary>
 public class Construction : MonoBehaviour
 {
-    [Header("Setup")]
-    [SerializeField]
-    private Transform _builtObjectRootOverride;
+    [Header("Setup")] [SerializeField] private Transform _builtObjectRootOverride;
 
-    [Tooltip("BuiltObjectRoot child adı. Override atanmadıysa buradan aranır.")]
-    [SerializeField]
+    [Tooltip("BuiltObjectRoot child adı. Override atanmadıysa buradan aranır.")] [SerializeField]
     private string _builtObjectRootName = "BuiltObjectRoot";
 
-    [Header("Animation")]
-    [SerializeField]
-    private float _brickTravelDuration = 0.5f;
+    [Header("Animation")] [SerializeField] private float _brickTravelDuration = 0.5f;
 
-    [SerializeField]
-    private float _brickJumpPower = 1f;
+    [SerializeField] private float _brickJumpPower = 1f;
 
-    [SerializeField]
-    private float _brickStagger = 0.05f;
+    [SerializeField] private float _brickStagger = 0.05f;
 
-    [SerializeField]
-    private Ease _brickTravelEase = Ease.OutQuad;
+    [SerializeField] private Ease _brickTravelEase = Ease.OutQuad;
 
-    [Header("Piece Reveal Animation")]
-    [SerializeField]
+    [Header("Piece Reveal Animation")] [SerializeField]
     private float _piecePunchDuration = 0.35f;
 
-    [SerializeField]
-    private float _piecePunchStrength = 0.2f;
+    [SerializeField] private float _piecePunchStrength = 0.2f;
 
-    [SerializeField]
-    private int _piecePunchVibrato = 10;
+    [SerializeField] private int _piecePunchVibrato = 10;
 
-    [SerializeField]
-    private float _piecePunchElasticity = 0.8f;
+    [SerializeField] private float _piecePunchElasticity = 0.8f;
 
     private Transform _builtObjectRoot;
     private readonly List<Transform> _pieces = new();
@@ -104,10 +93,10 @@ public class Construction : MonoBehaviour
                 if (targetPiece != null)
                 {
                     targetPiece.gameObject.SetActive(true);
-                    Vibration.Vibrate();
+                    MOST_HapticFeedback.GenerateWithCooldown(MOST_HapticFeedback.HapticTypes.Selection,.02f);
                     PlayPieceRevealAnimation(targetPiece);
                     SoundManager.Instance.PlaySfx(GameManager.Instance.brickPlacementSound);
-                    Instantiate(GameManager.Instance.particlePoof,targetPiece.position,Quaternion.identity);
+                    Instantiate(GameManager.Instance.particlePoof, targetPiece.position, Quaternion.identity);
                     openedPieces++;
                 }
 
@@ -194,7 +183,8 @@ public class Construction : MonoBehaviour
         return root.childCount > 0 ? root.GetChild(0) : null;
     }
 
-    private IEnumerator AnimateBrickTransferWithDelay(Brick brick, Transform targetPiece, float delay, Action onComplete)
+    private IEnumerator AnimateBrickTransferWithDelay(Brick brick, Transform targetPiece, float delay,
+        Action onComplete)
     {
         if (delay > 0f)
         {
@@ -208,17 +198,19 @@ public class Construction : MonoBehaviour
         }
 
         var brickTransform = brick.Instance.transform;
-        var destination = targetPiece != null ? targetPiece.position : (_builtObjectRoot != null ? _builtObjectRoot.position : brickTransform.position);
+        var destination = targetPiece != null
+            ? targetPiece.position
+            : (_builtObjectRoot != null ? _builtObjectRoot.position : brickTransform.position);
         brickTransform.SetParent(_builtObjectRoot == null ? brickTransform.parent : _builtObjectRoot);
         brickTransform.DOKill();
 
         var tween = brickTransform
             .DOJump(destination, _brickJumpPower, 1, _brickTravelDuration)
             .SetEase(_brickTravelEase);
-        
-        var rotateTravelDuration = _brickTravelDuration/100 * 90;
 
-        brickTransform.DORotate(Vector3.zero,  rotateTravelDuration);
+        var rotateTravelDuration = _brickTravelDuration / 100 * 90;
+
+        brickTransform.DORotate(Vector3.zero, rotateTravelDuration);
 
         yield return tween.WaitForCompletion();
 
@@ -242,7 +234,8 @@ public class Construction : MonoBehaviour
         }
 
         piece
-            .DOPunchScale(Vector3.one * _piecePunchStrength, _piecePunchDuration, _piecePunchVibrato, _piecePunchElasticity)
+            .DOPunchScale(Vector3.one * _piecePunchStrength, _piecePunchDuration, _piecePunchVibrato,
+                _piecePunchElasticity)
             .SetEase(Ease.OutQuad);
     }
 

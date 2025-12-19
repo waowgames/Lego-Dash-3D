@@ -94,7 +94,8 @@ public class SoundManager : SingletonMonoBehaviour<SoundManager>
     {
         isVibrationOn = on;
         PlayerPrefs.SetInt(PrefVibration, on ? 1 : 0);
-        Vibration.isActive = isVibrationOn;
+        // Vibration.isActive = isVibrationOn;
+        // MOST_HapticFeedback.Generate(MOST_HapticFeedback.HapticTypes.SoftImpact);
     }
 
     // Oyun içi SFX çalma metodu
