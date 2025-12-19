@@ -105,6 +105,7 @@ public class Construction : MonoBehaviour
                     Vibration.Vibrate();
                     PlayPieceRevealAnimation(targetPiece);
                     SoundManager.Instance.PlaySfx(GameManager.Instance.brickPlacementSound);
+                    Instantiate(GameManager.Instance.particlePoof,targetPiece.position,Quaternion.identity);
                     openedPieces++;
                 }
 

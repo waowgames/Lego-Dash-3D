@@ -506,6 +506,7 @@ MonoBehaviour:
   _initialLevelConfig: {fileID: 11400000, guid: 27d20ad96aa731646be1cb00305d8b6b, type: 2}
   _startLevelOnStart: 1
   brickPlacementSound: {fileID: 8300000, guid: 0c1a9bf51b8ff1f478925c0ee80122c0, type: 3}
+  particlePoof: {fileID: 147324, guid: c51e34914bd18ff4880b11005334182e, type: 3}
 --- !u!4 &265664889
 Transform:
   m_ObjectHideFlags: 0
