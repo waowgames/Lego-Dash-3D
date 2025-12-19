@@ -17,7 +17,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &494450
 Transform:
   m_ObjectHideFlags: 0
@@ -9689,7 +9689,7 @@ GameObject:
   - component: {fileID: 19869282}
   - component: {fileID: 19902872}
   m_Layer: 0
-  m_Name: StarPoof
+  m_Name: Poof
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14514,7 +14514,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &470690
 Transform:
   m_ObjectHideFlags: 0
@@ -19393,7 +19393,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &454906
 Transform:
   m_ObjectHideFlags: 0
