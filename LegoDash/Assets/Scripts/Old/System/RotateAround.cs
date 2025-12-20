@@ -1,34 +1,20 @@
-using System.Collections;
 using UnityEngine;
 
 public class RotateAround : MonoBehaviour
 {
-    [SerializeField] private float rotateSpeed;
-    [SerializeField] private float rotateAxis; // 0 = X, 1 = Y, 2 = Z
-    private Transform _transform;
+    [SerializeField] private float rotateSpeed = 100f;
+    [SerializeField] private int rotateAxis; // 0 = X, 1 = Y, 2 = Z
 
-    private void Start()
+    private void Update()
     {
-        _transform = GetComponent<Transform>();
-        StartCoroutine(RotateCoroutine());
-    }
+        // Vector3.zero oluşturup sadece seçili ekseni dolduruyoruz
+        Vector3 rotationVector = Vector3.zero;
 
-    private IEnumerator RotateCoroutine()
-    {
-        while (true)
-        {
-            RotateAroundUpdate();
-            yield return new WaitForSeconds(0.02f); // Update every 20 milliseconds
-        }
-    }
+        if (rotateAxis == 0) rotationVector.x = rotateSpeed;
+        else if (rotateAxis == 1) rotationVector.y = rotateSpeed;
+        else if (rotateAxis == 2) rotationVector.z = rotateSpeed;
 
-    private void RotateAroundUpdate()
-    {
-        _transform.Rotate(
-            rotateAxis == 0 ? 30 * Time.deltaTime * rotateSpeed : 0,
-            rotateAxis == 1 ? 30 * Time.deltaTime * rotateSpeed : 0,
-            rotateAxis == 2 ? 30 * Time.deltaTime * rotateSpeed : 0
-        );
+        // Time.deltaTime ile çarpmak, dönüşü "saniye başına derece" yapar
+        transform.Rotate(rotationVector * Time.deltaTime);
     }
-
 }
