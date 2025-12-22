@@ -1,5 +1,6 @@
 using System.Collections;
-using System.Collections.Generic; 
+using System.Collections.Generic;
+using DG.Tweening;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -63,6 +64,11 @@ public class LevelCompletionFlow : MonoBehaviour
         //     yield return construction.PlayCompletionCelebration(celebrationPieceDelay, celebrationPunchStrength,
         //         celebrationDuration);
         // }
+        if (construction != null)
+        {
+            construction.transform.DOShakeScale(.8f,.125f);
+
+        }
         yield return new WaitForSeconds(2.7f);
 
         yield return ShowLevelUpPopup();
