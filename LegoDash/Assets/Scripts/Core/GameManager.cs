@@ -165,11 +165,93 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             _stands[i].BuildStand(bricks, _prefabLookup);
         }
 
+        ApplyLockedBricks(config);
+
         if (_stands.Count < standLayouts.Count)
         {
 #if UNITY_EDITOR
             Debug.LogWarning("Sahnedeki stant sayısı LevelConfig içindeki tanımdan az.");
 #endif
+        }
+    }
+
+    private void ApplyLockedBricks(LevelConfig config)
+    {
+        if (config == null)
+        {
+            return;
+        }
+
+        int totalLocked = config.LockedBrickCount;
+        if (totalLocked <= 0)
+        {
+            return;
+        }
+
+        var eligibleStands = _stands.Where(stand => stand != null && stand.BrickCount > 0).ToList();
+        if (eligibleStands.Count == 0)
+        {
+            return;
+        }
+
+        int totalBricks = eligibleStands.Sum(stand => stand.BrickCount);
+        totalLocked = Mathf.Clamp(totalLocked, 0, totalBricks);
+        if (totalLocked == 0)
+        {
+            return;
+        }
+
+        var standOrder = new List<StandController>(eligibleStands);
+        if (config.RandomizeLockedBricks)
+        {
+            Shuffle(standOrder, new System.Random(unchecked(_currentLevelIndex * 397 ^ totalLocked)));
+        }
+
+        var assigned = new Dictionary<StandController, int>(standOrder.Count);
+        foreach (var stand in standOrder)
+        {
+            assigned[stand] = 0;
+        }
+
+        int remaining = totalLocked;
+        while (remaining > 0)
+        {
+            bool assignedAny = false;
+            foreach (var stand in standOrder)
+            {
+                if (remaining == 0)
+                {
+                    break;
+                }
+
+                if (assigned[stand] >= stand.BrickCount)
+                {
+                    continue;
+                }
+
+                assigned[stand] += 1;
+                remaining -= 1;
+                assignedAny = true;
+            }
+
+            if (!assignedAny)
+            {
+                break;
+            }
+        }
+
+        foreach (var entry in assigned)
+        {
+            entry.Key.LockBottomBricks(entry.Value);
+        }
+    }
+
+    private static void Shuffle<T>(IList<T> list, System.Random rng)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int swapIndex = rng.Next(i + 1);
+            (list[i], list[swapIndex]) = (list[swapIndex], list[i]);
         }
     }
 

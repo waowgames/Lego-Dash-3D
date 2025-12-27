@@ -23,6 +23,19 @@ public class StandController : MonoBehaviour
     [SerializeField]
     private float _brickHeightSpacing = 0.25f;
 
+    [Header("Locked Bricks")]
+    [SerializeField]
+    private Color _lockedBrickColor = new(0.6f, 0.6f, 0.6f, 1f);
+
+    [SerializeField]
+    private Sprite _lockIconSprite;
+
+    [SerializeField]
+    private Vector3 _lockIconOffset = new(0f, 0.15f, 0f);
+
+    [SerializeField, Min(0.01f)]
+    private float _lockIconScale = 0.2f;
+
     [Header("Reorder Animation")]
     [SerializeField]
     private float _reorderDuration = 0.15f;
@@ -32,7 +45,6 @@ public class StandController : MonoBehaviour
 
     private readonly List<Brick> _bricks = new();
     private Tween _modelScaleTween;
-
     public Transform Model => _model;
     /// <summary>
     /// Builds the stand using the provided brick colors and prefab mapping.
@@ -54,6 +66,7 @@ public class StandController : MonoBehaviour
             PositionBrick(instance.transform, _bricks.Count - 1);
         }
 
+        UnlockTopBrickIfNeeded();
         UpdateModelScale(false);
     }
 
@@ -62,12 +75,13 @@ public class StandController : MonoBehaviour
     /// </summary>
     public BrickColor? PeekTopColor()
     {
+        UnlockTopBrickIfNeeded();
         if (_bricks.Count == 0)
         {
             return null;
         }
 
-        return _bricks[^1].Color;
+        return _bricks[^1].IsLocked ? null : _bricks[^1].Color;
     }
 
     /// <summary>
@@ -77,7 +91,13 @@ public class StandController : MonoBehaviour
     {
         var result = new List<Brick>();
 
+        UnlockTopBrickIfNeeded();
         if (_bricks.Count == 0)
+        {
+            return result;
+        }
+
+        if (_bricks[^1].IsLocked)
         {
             return result;
         }
@@ -93,6 +113,7 @@ public class StandController : MonoBehaviour
         // Preserve original top-first order for downstream systems.
         result.Reverse();
 
+        UnlockTopBrickIfNeeded();
         UpdateModelScale(_bricks.Count == 0);
         return result;
     }
@@ -122,6 +143,7 @@ public class StandController : MonoBehaviour
             _bricks.Add(brick);
         }
 
+        UnlockTopBrickIfNeeded();
         UpdateModelScale(true);
     }
 
@@ -154,7 +176,7 @@ public class StandController : MonoBehaviour
 
         for (int i = 0; i < _bricks.Count; i++)
         {
-            if (_bricks[i].Color != color)
+            if (_bricks[i].IsLocked || _bricks[i].Color != color)
             {
                 continue;
             }
@@ -164,6 +186,7 @@ public class StandController : MonoBehaviour
 
             DetachBrickInstance(brick);
             CollapseAndReorder();
+            UnlockTopBrickIfNeeded();
             UpdateModelScale(_bricks.Count == 0);
             return true;
         }
@@ -189,6 +212,23 @@ public class StandController : MonoBehaviour
             var targetPosition = Vector3.up * (_brickHeightSpacing * i);
             brickTransform.DOLocalMove(targetPosition, _reorderDuration).SetEase(_reorderEase);
         }
+    }
+
+    public void LockBottomBricks(int lockedCount)
+    {
+        if (_bricks.Count == 0)
+        {
+            return;
+        }
+
+        int clampedCount = Mathf.Clamp(lockedCount, 0, _bricks.Count);
+        for (int i = 0; i < _bricks.Count; i++)
+        {
+            bool shouldLock = i < clampedCount;
+            _bricks[i].SetLocked(shouldLock, _lockedBrickColor, _lockIconSprite, _lockIconOffset, _lockIconScale);
+        }
+
+        UnlockTopBrickIfNeeded();
     }
 
     private void OnMouseDown()
@@ -245,6 +285,21 @@ public class StandController : MonoBehaviour
             _model.localScale = targetScale;
         }
     }
+
+    private void UnlockTopBrickIfNeeded()
+    {
+        if (_bricks.Count == 0)
+        {
+            return;
+        }
+
+        var topBrick = _bricks[^1];
+        if (topBrick.IsLocked)
+        {
+            topBrick.SetLocked(false, _lockedBrickColor, null, _lockIconOffset, _lockIconScale);
+        }
+    }
+
 
     private void DetachBrickInstance(Brick brick)
     {
