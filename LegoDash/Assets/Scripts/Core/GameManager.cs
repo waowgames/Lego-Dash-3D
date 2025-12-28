@@ -20,6 +20,8 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
     [Header("Bricks")] [SerializeField] private List<BrickPrefabMapping> _brickPrefabs = new();
 
+    [SerializeField] private Material _lockedBrickMaterial;
+
     [Header("Task Car Models")] [SerializeField]
     private List<TaskCarPrefabMapping> _taskCarPrefabs = new();
 
@@ -165,11 +167,140 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             _stands[i].BuildStand(bricks, _prefabLookup);
         }
 
+        ApplyLockedBricks(config);
+
         if (_stands.Count < standLayouts.Count)
         {
 #if UNITY_EDITOR
             Debug.LogWarning("Sahnedeki stant sayısı LevelConfig içindeki tanımdan az.");
 #endif
+        }
+    }
+
+    private void ApplyLockedBricks(LevelConfig config)
+    {
+        if (config == null)
+        {
+            return;
+        }
+
+        int totalLocked = config.LockedBrickCount;
+        if (totalLocked <= 0)
+        {
+            return;
+        }
+
+        var eligibleStands = _stands.Where(stand => stand != null && stand.BrickCount > 0).ToList();
+        if (eligibleStands.Count == 0)
+        {
+            return;
+        }
+
+        int totalBricks = eligibleStands.Sum(stand => stand.BrickCount);
+        totalLocked = Mathf.Clamp(totalLocked, 0, totalBricks);
+        if (totalLocked == 0)
+        {
+            return;
+        }
+
+        var rng = new System.Random(unchecked(_currentLevelIndex * 397 ^ totalLocked));
+        var standOrder = new List<StandController>(eligibleStands);
+        if (config.RandomizeLockedBricks)
+        {
+            Shuffle(standOrder, rng);
+        }
+
+        var assigned = new Dictionary<StandController, int>(standOrder.Count);
+        foreach (var stand in standOrder)
+        {
+            assigned[stand] = 0;
+        }
+
+        int remaining = totalLocked;
+        while (remaining > 0)
+        {
+            bool assignedAny = false;
+
+            foreach (var stand in standOrder)
+            {
+                if (remaining == 0)
+                {
+                    break;
+                }
+
+                int chunkSize = stand.GetLockChunkSize(assigned[stand]);
+                if (chunkSize <= 0)
+                {
+                    continue;
+                }
+
+                if (chunkSize > remaining)
+                {
+                    continue;
+                }
+
+                assigned[stand] += chunkSize;
+                remaining -= chunkSize;
+                assignedAny = true;
+            }
+
+            if (assignedAny)
+            {
+                continue;
+            }
+
+            StandController fallbackStand = null;
+            int fallbackSize = int.MaxValue;
+            foreach (var stand in standOrder)
+            {
+                int chunkSize = stand.GetLockChunkSize(assigned[stand]);
+                if (chunkSize <= 0)
+                {
+                    continue;
+                }
+
+                if (chunkSize < fallbackSize)
+                {
+                    fallbackSize = chunkSize;
+                    fallbackStand = stand;
+                }
+            }
+
+            if (fallbackStand == null)
+            {
+                break;
+            }
+
+            assigned[fallbackStand] += fallbackSize;
+            remaining -= fallbackSize;
+        }
+
+        foreach (var entry in assigned)
+        {
+            if (entry.Value <= 0)
+            {
+                continue;
+            }
+
+            if (config.AllowLockedInMiddle)
+            {
+                int maxStart = Mathf.Max(0, entry.Key.BrickCount - entry.Value);
+                int startIndex = maxStart == 0 ? 0 : rng.Next(0, maxStart + 1);
+                entry.Key.LockRange(startIndex, entry.Value, _lockedBrickMaterial);
+            }
+            else
+            {
+                entry.Key.LockBottomBricks(entry.Value, _lockedBrickMaterial);
+            }
+        }
+    }
+
+    private static void Shuffle<T>(IList<T> list, System.Random rng)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int swapIndex = rng.Next(i + 1);
+            (list[i], list[swapIndex]) = (list[swapIndex], list[i]);
         }
     }
 

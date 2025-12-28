@@ -51,6 +51,11 @@ MonoBehaviour:
   _model: {fileID: 1539224980306060397}
   _modelScaleDuration: 0.25
   _brickHeightSpacing: 0.3
+  _lockIconSprite: {fileID: 0}
+  _lockIconOffset: {x: 0, y: 0.15, z: 0}
+  _lockIconScale: 0.2
+  _reorderDuration: 0.15
+  _reorderEase: 9
 --- !u!65 &7050483946230687531
 BoxCollider:
   m_ObjectHideFlags: 0

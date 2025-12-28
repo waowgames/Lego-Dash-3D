@@ -14,6 +14,13 @@ public class LevelConfig : ScriptableObject
     [SerializeField, Min(1)] private int storageCapacity = 7;
     [Tooltip("Bu level için kullanılacak inşaat prefab'ı.")]
     [SerializeField] private Construction constructionPrefab;
+    [Header("Discovery")]
+    [Tooltip("Bottom bricks that start locked for discovery.")]
+    [SerializeField, Min(0)] private int lockedBrickCount = 0;
+    [Tooltip("Randomly distribute locked bricks across available stands.")]
+    [SerializeField] private bool randomizeLockedBricks = true;
+    [Tooltip("Allow locked bricks to appear in the middle of stacks instead of only at the bottom.")]
+    [SerializeField] private bool allowLockedInMiddle = false;
 
     public string LevelName => string.IsNullOrWhiteSpace(levelName) ? name : levelName;
     public IReadOnlyList<LevelTaskDefinition> Tasks => tasks;
@@ -21,6 +28,9 @@ public class LevelConfig : ScriptableObject
     public float TimeLimitSeconds => Mathf.Max(0f, timeLimitSeconds);
     public int StorageCapacity => Mathf.Max(1, storageCapacity);
     public Construction ConstructionPrefab => constructionPrefab;
+    public int LockedBrickCount => Mathf.Max(0, lockedBrickCount);
+    public bool RandomizeLockedBricks => randomizeLockedBricks;
+    public bool AllowLockedInMiddle => allowLockedInMiddle;
 }
 
 [System.Serializable]

@@ -23,6 +23,16 @@ public class StandController : MonoBehaviour
     [SerializeField]
     private float _brickHeightSpacing = 0.25f;
 
+    [Header("Locked Bricks")]
+    [SerializeField]
+    private Sprite _lockIconSprite;
+
+    [SerializeField]
+    private Vector3 _lockIconOffset = new(0f, 0.15f, 0f);
+
+    [SerializeField, Min(0.01f)]
+    private float _lockIconScale = 0.2f;
+
     [Header("Reorder Animation")]
     [SerializeField]
     private float _reorderDuration = 0.15f;
@@ -32,7 +42,6 @@ public class StandController : MonoBehaviour
 
     private readonly List<Brick> _bricks = new();
     private Tween _modelScaleTween;
-
     public Transform Model => _model;
     /// <summary>
     /// Builds the stand using the provided brick colors and prefab mapping.
@@ -54,6 +63,7 @@ public class StandController : MonoBehaviour
             PositionBrick(instance.transform, _bricks.Count - 1);
         }
 
+        UnlockTopBrickIfNeeded();
         UpdateModelScale(false);
     }
 
@@ -62,12 +72,13 @@ public class StandController : MonoBehaviour
     /// </summary>
     public BrickColor? PeekTopColor()
     {
+        UnlockTopBrickIfNeeded();
         if (_bricks.Count == 0)
         {
             return null;
         }
 
-        return _bricks[^1].Color;
+        return _bricks[^1].IsLocked ? null : _bricks[^1].Color;
     }
 
     /// <summary>
@@ -77,7 +88,13 @@ public class StandController : MonoBehaviour
     {
         var result = new List<Brick>();
 
+        UnlockTopBrickIfNeeded();
         if (_bricks.Count == 0)
+        {
+            return result;
+        }
+
+        if (_bricks[^1].IsLocked)
         {
             return result;
         }
@@ -93,6 +110,7 @@ public class StandController : MonoBehaviour
         // Preserve original top-first order for downstream systems.
         result.Reverse();
 
+        UnlockTopBrickIfNeeded();
         UpdateModelScale(_bricks.Count == 0);
         return result;
     }
@@ -122,6 +140,7 @@ public class StandController : MonoBehaviour
             _bricks.Add(brick);
         }
 
+        UnlockTopBrickIfNeeded();
         UpdateModelScale(true);
     }
 
@@ -154,7 +173,7 @@ public class StandController : MonoBehaviour
 
         for (int i = 0; i < _bricks.Count; i++)
         {
-            if (_bricks[i].Color != color)
+            if (_bricks[i].IsLocked || _bricks[i].Color != color)
             {
                 continue;
             }
@@ -164,6 +183,7 @@ public class StandController : MonoBehaviour
 
             DetachBrickInstance(brick);
             CollapseAndReorder();
+            UnlockTopBrickIfNeeded();
             UpdateModelScale(_bricks.Count == 0);
             return true;
         }
@@ -189,6 +209,142 @@ public class StandController : MonoBehaviour
             var targetPosition = Vector3.up * (_brickHeightSpacing * i);
             brickTransform.DOLocalMove(targetPosition, _reorderDuration).SetEase(_reorderEase);
         }
+    }
+
+    public void LockBottomBricks(int lockedCount, Material lockedMaterial)
+    {
+        if (_bricks.Count == 0)
+        {
+            return;
+        }
+
+        int clampedCount = Mathf.Clamp(lockedCount, 0, _bricks.Count);
+        int expandedCount = GetExpandedLockCount(clampedCount);
+        for (int i = 0; i < _bricks.Count; i++)
+        {
+            bool shouldLock = i < expandedCount;
+            _bricks[i].SetLocked(shouldLock, lockedMaterial, _lockIconSprite, _lockIconOffset, _lockIconScale);
+        }
+
+        UnlockTopBrickIfNeeded();
+    }
+
+    public void LockRange(int startIndex, int count, Material lockedMaterial)
+    {
+        if (_bricks.Count == 0 || count <= 0)
+        {
+            return;
+        }
+
+        int clampedStart = Mathf.Clamp(startIndex, 0, _bricks.Count - 1);
+        int clampedEnd = Mathf.Clamp(clampedStart + count - 1, 0, _bricks.Count - 1);
+        ExpandRangeToColorRuns(ref clampedStart, ref clampedEnd);
+
+        for (int i = 0; i < _bricks.Count; i++)
+        {
+            bool shouldLock = i >= clampedStart && i <= clampedEnd;
+            _bricks[i].SetLocked(shouldLock, lockedMaterial, _lockIconSprite, _lockIconOffset, _lockIconScale);
+        }
+
+        UnlockTopBrickIfNeeded();
+    }
+
+    public int GetExpandedRangeSize(int startIndex, int count)
+    {
+        if (_bricks.Count == 0 || count <= 0)
+        {
+            return 0;
+        }
+
+        int clampedStart = Mathf.Clamp(startIndex, 0, _bricks.Count - 1);
+        int clampedEnd = Mathf.Clamp(clampedStart + count - 1, 0, _bricks.Count - 1);
+        ExpandRangeToColorRuns(ref clampedStart, ref clampedEnd);
+        return clampedEnd - clampedStart + 1;
+    }
+
+    public int GetLockChunkSize(int lockedCount)
+    {
+        if (_bricks.Count == 0)
+        {
+            return 0;
+        }
+
+        int index = Mathf.Clamp(lockedCount, 0, _bricks.Count - 1);
+        return GetColorRunLengthFrom(index);
+    }
+
+    private int GetExpandedLockCount(int requestedCount)
+    {
+        if (requestedCount <= 0 || _bricks.Count == 0)
+        {
+            return 0;
+        }
+
+        int total = 0;
+        int index = 0;
+        int target = Mathf.Clamp(requestedCount, 0, _bricks.Count);
+
+        while (index < _bricks.Count && total < target)
+        {
+            int runLength = GetColorRunLengthFrom(index);
+            if (runLength <= 0)
+            {
+                break;
+            }
+
+            total += runLength;
+            index += runLength;
+        }
+
+        return Mathf.Min(total, _bricks.Count);
+    }
+
+    private int GetColorRunLengthFrom(int startIndex)
+    {
+        if (startIndex < 0 || startIndex >= _bricks.Count)
+        {
+            return 0;
+        }
+
+        var color = _bricks[startIndex].Color;
+        int length = 0;
+        for (int i = startIndex; i < _bricks.Count; i++)
+        {
+            if (_bricks[i].Color != color)
+            {
+                break;
+            }
+
+            length++;
+        }
+
+        return length;
+    }
+
+    private void ExpandRangeToColorRuns(ref int startIndex, ref int endIndex)
+    {
+        if (_bricks.Count == 0)
+        {
+            return;
+        }
+
+        int clampedStart = Mathf.Clamp(startIndex, 0, _bricks.Count - 1);
+        int clampedEnd = Mathf.Clamp(endIndex, 0, _bricks.Count - 1);
+
+        var startColor = _bricks[clampedStart].Color;
+        while (clampedStart > 0 && _bricks[clampedStart - 1].Color == startColor)
+        {
+            clampedStart--;
+        }
+
+        var endColor = _bricks[clampedEnd].Color;
+        while (clampedEnd < _bricks.Count - 1 && _bricks[clampedEnd + 1].Color == endColor)
+        {
+            clampedEnd++;
+        }
+
+        startIndex = clampedStart;
+        endIndex = clampedEnd;
     }
 
     private void OnMouseDown()
@@ -245,6 +401,34 @@ public class StandController : MonoBehaviour
             _model.localScale = targetScale;
         }
     }
+
+    private void UnlockTopBrickIfNeeded()
+    {
+        if (_bricks.Count == 0)
+        {
+            return;
+        }
+
+        int topIndex = _bricks.Count - 1;
+        var topBrick = _bricks[topIndex];
+        if (!topBrick.IsLocked)
+        {
+            return;
+        }
+
+        var targetColor = topBrick.Color;
+        for (int i = topIndex; i >= 0; i--)
+        {
+            var brick = _bricks[i];
+            if (brick.Color != targetColor || !brick.IsLocked)
+            {
+                break;
+            }
+
+            brick.SetLocked(false, null, null, _lockIconOffset, _lockIconScale);
+        }
+    }
+
 
     private void DetachBrickInstance(Brick brick)
     {
