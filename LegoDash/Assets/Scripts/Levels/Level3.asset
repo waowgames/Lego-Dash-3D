@@ -32,3 +32,6 @@ MonoBehaviour:
   timeLimitSeconds: 200
   storageCapacity: 14
   constructionPrefab: {fileID: 8973662685520896585, guid: e219bb0e0fa60cc47a84f0e7747b6705, type: 3}
+  lockedBrickCount: 12
+  randomizeLockedBricks: 1
+  allowLockedInMiddle: 1

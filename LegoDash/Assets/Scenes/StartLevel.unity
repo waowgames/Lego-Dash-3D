@@ -488,7 +488,7 @@ MonoBehaviour:
     Prefab: {fileID: 4746216671055761064, guid: 29343560241d3bb4eb72985d41f36d76, type: 3}
   - Color: 6
     Prefab: {fileID: 4746216671055761064, guid: 55dfa76d4f3aa6f4aa54f0f7091f74bc, type: 3}
-  _lockedBrickMaterial: {fileID: 2100000, guid: f724ec49a9310894c8bb572d39e5e5b6, type: 2}
+  _lockedBrickMaterial: {fileID: 2100000, guid: 18414e067ac2149cea3dd3071e424a28, type: 2}
   _taskCarPrefabs:
   - Color: 0
     Prefab: {fileID: 1054111592112900511, guid: d0b93465bff7b4926b14059efd72fe14, type: 3}

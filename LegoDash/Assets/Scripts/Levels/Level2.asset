@@ -32,3 +32,4 @@ MonoBehaviour:
   constructionPrefab: {fileID: 8973662685520896585, guid: 075192a940c7bd24dafa03ebad4ce65d, type: 3}
   lockedBrickCount: 9
   randomizeLockedBricks: 1
+  allowLockedInMiddle: 1
