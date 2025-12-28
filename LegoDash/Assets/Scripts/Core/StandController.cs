@@ -350,10 +350,23 @@ public class StandController : MonoBehaviour
             return;
         }
 
-        var topBrick = _bricks[^1];
-        if (topBrick.IsLocked)
+        int topIndex = _bricks.Count - 1;
+        var topBrick = _bricks[topIndex];
+        if (!topBrick.IsLocked)
         {
-            topBrick.SetLocked(false, null, null, _lockIconOffset, _lockIconScale);
+            return;
+        }
+
+        var targetColor = topBrick.Color;
+        for (int i = topIndex; i >= 0; i--)
+        {
+            var brick = _bricks[i];
+            if (brick.Color != targetColor || !brick.IsLocked)
+            {
+                break;
+            }
+
+            brick.SetLocked(false, null, null, _lockIconOffset, _lockIconScale);
         }
     }
 
