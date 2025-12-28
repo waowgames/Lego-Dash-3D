@@ -27,6 +27,7 @@ public class Brick
 
     private readonly List<BrickRendererState> _rendererStates = new();
     private GameObject _lockIconInstance;
+    private bool _hasCachedMaterials;
 
     public Brick(BrickColor color, GameObject instance)
     {
@@ -35,7 +36,7 @@ public class Brick
         CacheRendererStates();
     }
 
-    public void SetLocked(bool locked, Color lockedColor, Sprite lockSprite, Vector3 iconOffset, float iconScale)
+    public void SetLocked(bool locked, Material lockedMaterial, Sprite lockSprite, Vector3 iconOffset, float iconScale)
     {
         if (IsLocked == locked)
         {
@@ -46,7 +47,7 @@ public class Brick
 
         if (locked)
         {
-            ApplyLockedVisuals(lockedColor, lockSprite, iconOffset, iconScale);
+            ApplyLockedVisuals(lockedMaterial, lockSprite, iconOffset, iconScale);
         }
         else
         {
@@ -69,21 +70,25 @@ public class Brick
                 continue;
             }
 
-            if (TryGetColorProperty(renderer.sharedMaterial, out var colorProperty))
-            {
-                var originalColor = renderer.sharedMaterial.GetColor(colorProperty);
-                _rendererStates.Add(new BrickRendererState(renderer, colorProperty, originalColor));
-            }
+            _rendererStates.Add(new BrickRendererState(renderer));
         }
+
+        _hasCachedMaterials = _rendererStates.Count > 0;
     }
 
-    private void ApplyLockedVisuals(Color lockedColor, Sprite lockSprite, Vector3 iconOffset, float iconScale)
+    private void ApplyLockedVisuals(Material lockedMaterial, Sprite lockSprite, Vector3 iconOffset, float iconScale)
     {
         foreach (var state in _rendererStates)
         {
-            state.PropertyBlock.Clear();
-            state.PropertyBlock.SetColor(state.ColorProperty, lockedColor);
-            state.Renderer.SetPropertyBlock(state.PropertyBlock);
+            if (!_hasCachedMaterials)
+            {
+                continue;
+            }
+
+            if (lockedMaterial != null)
+            {
+                state.Renderer.sharedMaterials = state.BuildLockedMaterials(lockedMaterial);
+            }
         }
 
         if (lockSprite != null && Instance != null)
@@ -112,9 +117,12 @@ public class Brick
     {
         foreach (var state in _rendererStates)
         {
-            state.PropertyBlock.Clear();
-            state.PropertyBlock.SetColor(state.ColorProperty, state.OriginalColor);
-            state.Renderer.SetPropertyBlock(state.PropertyBlock);
+            if (!_hasCachedMaterials)
+            {
+                continue;
+            }
+
+            state.Renderer.sharedMaterials = state.OriginalMaterials;
         }
 
         if (_lockIconInstance != null)
@@ -124,37 +132,31 @@ public class Brick
         }
     }
 
-    private static bool TryGetColorProperty(Material material, out string property)
-    {
-        if (material.HasProperty("_BaseColor"))
-        {
-            property = "_BaseColor";
-            return true;
-        }
-
-        if (material.HasProperty("_Color"))
-        {
-            property = "_Color";
-            return true;
-        }
-
-        property = null;
-        return false;
-    }
-
     private sealed class BrickRendererState
     {
         public Renderer Renderer { get; }
-        public string ColorProperty { get; }
-        public Color OriginalColor { get; }
-        public MaterialPropertyBlock PropertyBlock { get; }
+        public Material[] OriginalMaterials { get; }
 
-        public BrickRendererState(Renderer renderer, string colorProperty, Color originalColor)
+        public BrickRendererState(Renderer renderer)
         {
             Renderer = renderer;
-            ColorProperty = colorProperty;
-            OriginalColor = originalColor;
-            PropertyBlock = new MaterialPropertyBlock();
+            OriginalMaterials = renderer != null ? renderer.sharedMaterials : System.Array.Empty<Material>();
+        }
+
+        public Material[] BuildLockedMaterials(Material lockedMaterial)
+        {
+            if (OriginalMaterials == null || OriginalMaterials.Length == 0)
+            {
+                return new[] { lockedMaterial };
+            }
+
+            var lockedMaterials = new Material[OriginalMaterials.Length];
+            for (int i = 0; i < lockedMaterials.Length; i++)
+            {
+                lockedMaterials[i] = lockedMaterial;
+            }
+
+            return lockedMaterials;
         }
     }
 }

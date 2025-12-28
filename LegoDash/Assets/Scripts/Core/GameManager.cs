@@ -20,6 +20,8 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
     [Header("Bricks")] [SerializeField] private List<BrickPrefabMapping> _brickPrefabs = new();
 
+    [SerializeField] private Material _lockedBrickMaterial;
+
     [Header("Task Car Models")] [SerializeField]
     private List<TaskCarPrefabMapping> _taskCarPrefabs = new();
 
@@ -242,7 +244,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
         foreach (var entry in assigned)
         {
-            entry.Key.LockBottomBricks(entry.Value);
+            entry.Key.LockBottomBricks(entry.Value, _lockedBrickMaterial);
         }
     }
 

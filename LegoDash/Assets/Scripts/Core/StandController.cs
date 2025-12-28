@@ -25,9 +25,6 @@ public class StandController : MonoBehaviour
 
     [Header("Locked Bricks")]
     [SerializeField]
-    private Color _lockedBrickColor = new(0.6f, 0.6f, 0.6f, 1f);
-
-    [SerializeField]
     private Sprite _lockIconSprite;
 
     [SerializeField]
@@ -214,7 +211,7 @@ public class StandController : MonoBehaviour
         }
     }
 
-    public void LockBottomBricks(int lockedCount)
+    public void LockBottomBricks(int lockedCount, Material lockedMaterial)
     {
         if (_bricks.Count == 0)
         {
@@ -225,7 +222,7 @@ public class StandController : MonoBehaviour
         for (int i = 0; i < _bricks.Count; i++)
         {
             bool shouldLock = i < clampedCount;
-            _bricks[i].SetLocked(shouldLock, _lockedBrickColor, _lockIconSprite, _lockIconOffset, _lockIconScale);
+            _bricks[i].SetLocked(shouldLock, lockedMaterial, _lockIconSprite, _lockIconOffset, _lockIconScale);
         }
 
         UnlockTopBrickIfNeeded();
@@ -296,7 +293,7 @@ public class StandController : MonoBehaviour
         var topBrick = _bricks[^1];
         if (topBrick.IsLocked)
         {
-            topBrick.SetLocked(false, _lockedBrickColor, null, _lockIconOffset, _lockIconScale);
+            topBrick.SetLocked(false, null, null, _lockIconOffset, _lockIconScale);
         }
     }
 
