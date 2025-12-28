@@ -219,6 +219,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         while (remaining > 0)
         {
             bool assignedAny = false;
+
             foreach (var stand in standOrder)
             {
                 if (remaining == 0)
@@ -226,20 +227,51 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
                     break;
                 }
 
-                if (assigned[stand] >= stand.BrickCount)
+                int chunkSize = stand.GetLockChunkSize(assigned[stand]);
+                if (chunkSize <= 0)
                 {
                     continue;
                 }
 
-                assigned[stand] += 1;
-                remaining -= 1;
+                if (chunkSize > remaining)
+                {
+                    continue;
+                }
+
+                assigned[stand] += chunkSize;
+                remaining -= chunkSize;
                 assignedAny = true;
             }
 
-            if (!assignedAny)
+            if (assignedAny)
+            {
+                continue;
+            }
+
+            StandController fallbackStand = null;
+            int fallbackSize = int.MaxValue;
+            foreach (var stand in standOrder)
+            {
+                int chunkSize = stand.GetLockChunkSize(assigned[stand]);
+                if (chunkSize <= 0)
+                {
+                    continue;
+                }
+
+                if (chunkSize < fallbackSize)
+                {
+                    fallbackSize = chunkSize;
+                    fallbackStand = stand;
+                }
+            }
+
+            if (fallbackStand == null)
             {
                 break;
             }
+
+            assigned[fallbackStand] += fallbackSize;
+            remaining -= fallbackSize;
         }
 
         foreach (var entry in assigned)

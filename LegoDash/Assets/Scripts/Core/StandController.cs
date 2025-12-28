@@ -219,13 +219,73 @@ public class StandController : MonoBehaviour
         }
 
         int clampedCount = Mathf.Clamp(lockedCount, 0, _bricks.Count);
+        int expandedCount = GetExpandedLockCount(clampedCount);
         for (int i = 0; i < _bricks.Count; i++)
         {
-            bool shouldLock = i < clampedCount;
+            bool shouldLock = i < expandedCount;
             _bricks[i].SetLocked(shouldLock, lockedMaterial, _lockIconSprite, _lockIconOffset, _lockIconScale);
         }
 
         UnlockTopBrickIfNeeded();
+    }
+
+    public int GetLockChunkSize(int lockedCount)
+    {
+        if (_bricks.Count == 0)
+        {
+            return 0;
+        }
+
+        int index = Mathf.Clamp(lockedCount, 0, _bricks.Count - 1);
+        return GetColorRunLengthFrom(index);
+    }
+
+    private int GetExpandedLockCount(int requestedCount)
+    {
+        if (requestedCount <= 0 || _bricks.Count == 0)
+        {
+            return 0;
+        }
+
+        int total = 0;
+        int index = 0;
+        int target = Mathf.Clamp(requestedCount, 0, _bricks.Count);
+
+        while (index < _bricks.Count && total < target)
+        {
+            int runLength = GetColorRunLengthFrom(index);
+            if (runLength <= 0)
+            {
+                break;
+            }
+
+            total += runLength;
+            index += runLength;
+        }
+
+        return Mathf.Min(total, _bricks.Count);
+    }
+
+    private int GetColorRunLengthFrom(int startIndex)
+    {
+        if (startIndex < 0 || startIndex >= _bricks.Count)
+        {
+            return 0;
+        }
+
+        var color = _bricks[startIndex].Color;
+        int length = 0;
+        for (int i = startIndex; i < _bricks.Count; i++)
+        {
+            if (_bricks[i].Color != color)
+            {
+                break;
+            }
+
+            length++;
+        }
+
+        return length;
     }
 
     private void OnMouseDown()
