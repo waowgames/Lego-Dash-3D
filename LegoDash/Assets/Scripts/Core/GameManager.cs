@@ -203,10 +203,11 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             return;
         }
 
+        var rng = new System.Random(unchecked(_currentLevelIndex * 397 ^ totalLocked));
         var standOrder = new List<StandController>(eligibleStands);
         if (config.RandomizeLockedBricks)
         {
-            Shuffle(standOrder, new System.Random(unchecked(_currentLevelIndex * 397 ^ totalLocked)));
+            Shuffle(standOrder, rng);
         }
 
         var assigned = new Dictionary<StandController, int>(standOrder.Count);
@@ -276,7 +277,21 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
         foreach (var entry in assigned)
         {
-            entry.Key.LockBottomBricks(entry.Value, _lockedBrickMaterial);
+            if (entry.Value <= 0)
+            {
+                continue;
+            }
+
+            if (config.AllowLockedInMiddle)
+            {
+                int maxStart = Mathf.Max(0, entry.Key.BrickCount - entry.Value);
+                int startIndex = maxStart == 0 ? 0 : rng.Next(0, maxStart + 1);
+                entry.Key.LockRange(startIndex, entry.Value, _lockedBrickMaterial);
+            }
+            else
+            {
+                entry.Key.LockBottomBricks(entry.Value, _lockedBrickMaterial);
+            }
         }
     }
 

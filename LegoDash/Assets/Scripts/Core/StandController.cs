@@ -229,6 +229,39 @@ public class StandController : MonoBehaviour
         UnlockTopBrickIfNeeded();
     }
 
+    public void LockRange(int startIndex, int count, Material lockedMaterial)
+    {
+        if (_bricks.Count == 0 || count <= 0)
+        {
+            return;
+        }
+
+        int clampedStart = Mathf.Clamp(startIndex, 0, _bricks.Count - 1);
+        int clampedEnd = Mathf.Clamp(clampedStart + count - 1, 0, _bricks.Count - 1);
+        ExpandRangeToColorRuns(ref clampedStart, ref clampedEnd);
+
+        for (int i = 0; i < _bricks.Count; i++)
+        {
+            bool shouldLock = i >= clampedStart && i <= clampedEnd;
+            _bricks[i].SetLocked(shouldLock, lockedMaterial, _lockIconSprite, _lockIconOffset, _lockIconScale);
+        }
+
+        UnlockTopBrickIfNeeded();
+    }
+
+    public int GetExpandedRangeSize(int startIndex, int count)
+    {
+        if (_bricks.Count == 0 || count <= 0)
+        {
+            return 0;
+        }
+
+        int clampedStart = Mathf.Clamp(startIndex, 0, _bricks.Count - 1);
+        int clampedEnd = Mathf.Clamp(clampedStart + count - 1, 0, _bricks.Count - 1);
+        ExpandRangeToColorRuns(ref clampedStart, ref clampedEnd);
+        return clampedEnd - clampedStart + 1;
+    }
+
     public int GetLockChunkSize(int lockedCount)
     {
         if (_bricks.Count == 0)
@@ -286,6 +319,32 @@ public class StandController : MonoBehaviour
         }
 
         return length;
+    }
+
+    private void ExpandRangeToColorRuns(ref int startIndex, ref int endIndex)
+    {
+        if (_bricks.Count == 0)
+        {
+            return;
+        }
+
+        int clampedStart = Mathf.Clamp(startIndex, 0, _bricks.Count - 1);
+        int clampedEnd = Mathf.Clamp(endIndex, 0, _bricks.Count - 1);
+
+        var startColor = _bricks[clampedStart].Color;
+        while (clampedStart > 0 && _bricks[clampedStart - 1].Color == startColor)
+        {
+            clampedStart--;
+        }
+
+        var endColor = _bricks[clampedEnd].Color;
+        while (clampedEnd < _bricks.Count - 1 && _bricks[clampedEnd + 1].Color == endColor)
+        {
+            clampedEnd++;
+        }
+
+        startIndex = clampedStart;
+        endIndex = clampedEnd;
     }
 
     private void OnMouseDown()
