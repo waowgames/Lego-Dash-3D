@@ -88,17 +88,17 @@ public class LevelFailPopup : MonoBehaviour
         // Butonları bağla
         if (retryButton != null)
         {
-            retryButton.interactable = true;
             retryButton.onClick.RemoveAllListeners();
             retryButton.onClick.AddListener(OnRetryClicked);
         }
 
         if (addTimeButton != null)
         {
-            addTimeButton.interactable = true;
             addTimeButton.onClick.RemoveAllListeners();
             addTimeButton.onClick.AddListener(OnAddTimeClicked);
         }
+
+        SetButtonsInteractable(true);
     }
 
     private void OnRetryClicked()
@@ -135,6 +135,7 @@ public class LevelFailPopup : MonoBehaviour
         {
             rootCg.interactable = false;
             rootCg.blocksRaycasts = false;
+            SetButtonsInteractable(false);
             rootCg.DOFade(0f, fadeTime).SetUpdate(true)
                 .OnComplete(() =>
                 {
@@ -160,6 +161,8 @@ public class LevelFailPopup : MonoBehaviour
             rootCg.blocksRaycasts = false;
         }
 
+        SetButtonsInteractable(false);
+
         if (_canvas != null)
         {
             _canvas.enabled = false;
@@ -178,9 +181,26 @@ public class LevelFailPopup : MonoBehaviour
             rootCg.blocksRaycasts = false;
         }
 
+        SetButtonsInteractable(false);
+
         if (_canvas != null)
         {
             _canvas.enabled = false;
+        }
+    }
+
+    private void SetButtonsInteractable(bool interactable)
+    {
+        if (retryButton != null)
+        {
+            retryButton.interactable = interactable;
+            retryButton.enabled = interactable;
+        }
+
+        if (addTimeButton != null)
+        {
+            addTimeButton.interactable = interactable;
+            addTimeButton.enabled = interactable;
         }
     }
 }
