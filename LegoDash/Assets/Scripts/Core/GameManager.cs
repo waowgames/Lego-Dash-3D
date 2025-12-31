@@ -331,15 +331,16 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
 
         if (!stand.TryBeginCollect())
         {
+            stand.QueueCollect();
             return;
         }
 
         try
         {
-        var activeCar = _taskCarManager.ActiveCar;
-        if (activeCar == null)
-        {
-            return;
+            var activeCar = _taskCarManager.ActiveCar;
+            if (activeCar == null)
+            {
+                return;
         }
 
         var topColor = stand.PeekTopColor();
@@ -366,6 +367,11 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         finally
         {
             stand.EndCollect();
+        }
+
+        if (stand.TryConsumePendingCollect())
+        {
+            HandleStandTapped(stand);
         }
     }
 
