@@ -38,6 +38,13 @@ public class LevelFailPopup : MonoBehaviour
             rootCg.interactable = false;
             rootCg.blocksRaycasts = false;
         }
+        
+        // Butonları bağla
+        if (retryButton != null)
+        {
+            retryButton.onClick.RemoveAllListeners();
+            retryButton.onClick.AddListener(OnRetryClicked);
+        }
     }
 
     private void OnEnable()
@@ -85,12 +92,7 @@ public class LevelFailPopup : MonoBehaviour
             rootCg.blocksRaycasts = true;
         }
 
-        // Butonları bağla
-        if (retryButton != null)
-        {
-            retryButton.onClick.RemoveAllListeners();
-            retryButton.onClick.AddListener(OnRetryClicked);
-        }
+ 
 
         if (addTimeButton != null)
         {
