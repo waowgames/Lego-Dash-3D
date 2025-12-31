@@ -40,9 +40,12 @@ public class StandController : MonoBehaviour
     [SerializeField]
     private Ease _reorderEase = Ease.OutCubic;
 
-    private readonly List<Brick> _bricks = new();
-    private Tween _modelScaleTween;
-    public Transform Model => _model;
+	private readonly List<Brick> _bricks = new();
+	private Tween _modelScaleTween;
+	private bool _isCollecting;
+	private bool _hasPendingCollect;
+	public Transform Model => _model;
+	public bool IsCollecting => _isCollecting;
     /// <summary>
     /// Builds the stand using the provided brick colors and prefab mapping.
     /// </summary>
@@ -100,12 +103,13 @@ public class StandController : MonoBehaviour
         }
 
         var targetColor = _bricks[^1].Color;
-        while (_bricks.Count > 0 && _bricks[^1].Color == targetColor)
-        {
-            var brick = _bricks[^1];
-            _bricks.RemoveAt(_bricks.Count - 1);
-            result.Add(brick);
-        }
+		while (_bricks.Count > 0 && _bricks[^1].Color == targetColor)
+		{
+			var brick = _bricks[^1];
+			_bricks.RemoveAt(_bricks.Count - 1);
+			DetachBrickInstance(brick);
+			result.Add(brick);
+		}
 
         // Preserve original top-first order for downstream systems.
         result.Reverse();
@@ -133,6 +137,7 @@ public class StandController : MonoBehaviour
 
             if (brickTransform != null)
             {
+                brickTransform.DOKill();
                 brickTransform.SetParent(_brickParent == null ? transform : _brickParent);
                 PositionBrick(brickTransform, startIndex + i);
             }
@@ -163,6 +168,41 @@ public class StandController : MonoBehaviour
     }
 
     public int BrickCount => _bricks.Count;
+
+    public bool TryBeginCollect()
+    {
+        if (_isCollecting)
+        {
+            return false;
+        }
+
+        _isCollecting = true;
+        return true;
+    }
+
+	public void EndCollect()
+	{
+		_isCollecting = false;
+	}
+
+	public void QueueCollect()
+	{
+		if (_isCollecting)
+		{
+			_hasPendingCollect = true;
+		}
+	}
+
+	public bool TryConsumePendingCollect()
+	{
+		if (!_hasPendingCollect)
+		{
+			return false;
+		}
+
+		_hasPendingCollect = false;
+		return true;
+	}
 
     /// <summary>
     /// Attempts to remove the first brick matching the requested color starting from the bottom.
@@ -438,6 +478,7 @@ public class StandController : MonoBehaviour
         }
 
         var brickTransform = brick.Instance.transform;
+        brickTransform.DOKill();
         if (brickTransform.parent != null)
         {
             brickTransform.SetParent(null);

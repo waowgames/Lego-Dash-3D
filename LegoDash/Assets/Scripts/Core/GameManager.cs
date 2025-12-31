@@ -329,10 +329,18 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             return;
         }
 
-        var activeCar = _taskCarManager.ActiveCar;
-        if (activeCar == null)
+        if (!stand.TryBeginCollect())
         {
+            stand.QueueCollect();
             return;
+        }
+
+        try
+        {
+            var activeCar = _taskCarManager.ActiveCar;
+            if (activeCar == null)
+            {
+                return;
         }
 
         var topColor = stand.PeekTopColor();
@@ -353,7 +361,20 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         }
         else
         {
-            SendToTemporaryZone(brickGroup);
+            if (!SendToTemporaryZone(brickGroup))
+            {
+                stand.ReturnBricksToTop(brickGroup);
+            }
+        }
+        }
+        finally
+        {
+            stand.EndCollect();
+        }
+
+        if (stand.TryConsumePendingCollect())
+        {
+            HandleStandTapped(stand);
         }
     }
 
@@ -417,25 +438,27 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         sourceStand?.ReturnBricksToTop(overflow);
     }
 
-    private void SendToTemporaryZone(List<Brick> bricks)
+    private bool SendToTemporaryZone(List<Brick> bricks)
     {
         if (_temporaryZone == null)
         {
-            return;
+            return false;
         }
 
         if (!_temporaryZone.CanAccept(bricks.Count))
         {
             FailLevel();
-            return;
+            return false;
         }
 
         var stored = _temporaryZone.AddBricks(bricks);
         if (!stored)
         {
             FailLevel();
-            return;
+            return false;
         }
+
+        return true;
     }
 
     /// <summary>
