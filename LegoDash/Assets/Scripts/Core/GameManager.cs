@@ -329,6 +329,13 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             return;
         }
 
+        if (!stand.TryBeginCollect())
+        {
+            return;
+        }
+
+        try
+        {
         var activeCar = _taskCarManager.ActiveCar;
         if (activeCar == null)
         {
@@ -354,6 +361,11 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         else
         {
             SendToTemporaryZone(brickGroup);
+        }
+        }
+        finally
+        {
+            stand.EndCollect();
         }
     }
 

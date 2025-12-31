@@ -42,7 +42,9 @@ public class StandController : MonoBehaviour
 
     private readonly List<Brick> _bricks = new();
     private Tween _modelScaleTween;
+    private bool _isCollecting;
     public Transform Model => _model;
+    public bool IsCollecting => _isCollecting;
     /// <summary>
     /// Builds the stand using the provided brick colors and prefab mapping.
     /// </summary>
@@ -163,6 +165,22 @@ public class StandController : MonoBehaviour
     }
 
     public int BrickCount => _bricks.Count;
+
+    public bool TryBeginCollect()
+    {
+        if (_isCollecting)
+        {
+            return false;
+        }
+
+        _isCollecting = true;
+        return true;
+    }
+
+    public void EndCollect()
+    {
+        _isCollecting = false;
+    }
 
     /// <summary>
     /// Attempts to remove the first brick matching the requested color starting from the bottom.
