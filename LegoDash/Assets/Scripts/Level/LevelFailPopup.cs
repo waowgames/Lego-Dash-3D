@@ -101,6 +101,7 @@ public class LevelFailPopup : MonoBehaviour
 
     private void OnRetryClicked()
     {
+        HideImmediate();
         if (LevelManager.Instance != null)
         {
             LevelManager.Instance.RestartLevel();
@@ -109,7 +110,6 @@ public class LevelFailPopup : MonoBehaviour
         {
             GameManager.Instance?.RestartActiveLevel();
         }
-        Hide();
     }
 
     private void OnAddTimeClicked()
@@ -142,6 +142,25 @@ public class LevelFailPopup : MonoBehaviour
         else
         {
             if (_canvas != null) _canvas.enabled = false;
+        }
+    }
+
+    private void HideImmediate()
+    {
+        if (!_isShowing) return;
+        _isShowing = false;
+
+        if (rootCg != null)
+        {
+            rootCg.DOKill();
+            rootCg.alpha = 0f;
+            rootCg.interactable = false;
+            rootCg.blocksRaycasts = false;
+        }
+
+        if (_canvas != null)
+        {
+            _canvas.enabled = false;
         }
     }
 
