@@ -137,6 +137,7 @@ public class StandController : MonoBehaviour
 
             if (brickTransform != null)
             {
+                brickTransform.DOKill();
                 brickTransform.SetParent(_brickParent == null ? transform : _brickParent);
                 PositionBrick(brickTransform, startIndex + i);
             }
@@ -477,6 +478,7 @@ public class StandController : MonoBehaviour
         }
 
         var brickTransform = brick.Instance.transform;
+        brickTransform.DOKill();
         if (brickTransform.parent != null)
         {
             brickTransform.SetParent(null);
