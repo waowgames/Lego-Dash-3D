@@ -88,12 +88,14 @@ public class LevelFailPopup : MonoBehaviour
         // Butonları bağla
         if (retryButton != null)
         {
+            retryButton.interactable = true;
             retryButton.onClick.RemoveAllListeners();
             retryButton.onClick.AddListener(OnRetryClicked);
         }
 
         if (addTimeButton != null)
         {
+            addTimeButton.interactable = true;
             addTimeButton.onClick.RemoveAllListeners();
             addTimeButton.onClick.AddListener(OnAddTimeClicked);
         }
