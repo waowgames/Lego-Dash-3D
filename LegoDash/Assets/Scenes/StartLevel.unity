@@ -2875,6 +2875,38 @@ PrefabInstance:
       propertyPath: boosterSlots.Array.data[2].onBoosterTriggered.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 909538731}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: levels.Array.size
+      value: 27
+      objectReference: {fileID: 0}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[20]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 543f83ada2c97154bbce5bf8cd2709ec, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[21]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 62294c822c568c04ab64f51d0d12d3a3, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[22]'
+      value: 
+      objectReference: {fileID: 11400000, guid: d5d0204d0cedb76448c536655a40623b, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[23]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 60f718537a2084447941a8357a1fd49f, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[24]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 8820fa1572e2d44458b13c1521beaa96, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[25]'
+      value: 
+      objectReference: {fileID: 11400000, guid: fc4f0ed624f3c77409335b7173da5ddc, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[26]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 32e6756a645ebbe409a44fa42a93205c, type: 2}
     - target: {fileID: 7303356749682882291, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: m_Name
       value: UI Manager
