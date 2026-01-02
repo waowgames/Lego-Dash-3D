@@ -40,13 +40,14 @@ public class LevelTextUI : MonoBehaviour
         int displayedLevel = 1;
         if (LevelManager.Instance != null)
         {
-            displayedLevel = LevelManager.Instance.DisplayedLevel1Based;
+            displayedLevel = ProgressPrefs.GetLevel();
         }
         else
         {
-            displayedLevel = ProgressPrefs.GetDisplayedLevelOr(1);
+            displayedLevel = ProgressPrefs.GetLevel();
         }
 
-        label.text = string.Format(format, displayedLevel);
+        var displayedTextPlusOne = displayedLevel + 1;
+        label.text = string.Format(format, displayedTextPlusOne);
     }
 }

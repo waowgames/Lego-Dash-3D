@@ -18,6 +18,11 @@ public static class ProgressPrefs
         return Mathf.Max(1, stored);
     }
 
+    public static int GetLevel()
+    {
+        return PlayerPrefs.GetInt(KEY_CURRENT_LEVEL, 0);
+    }
+
     public static void SetDisplayedLevel(int value)
     {
         PlayerPrefs.SetInt(KEY_DISPLAYED_LEVEL, Mathf.Max(1, value));
