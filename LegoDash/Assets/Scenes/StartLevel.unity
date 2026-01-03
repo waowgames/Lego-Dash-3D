@@ -2877,7 +2877,7 @@ PrefabInstance:
       objectReference: {fileID: 909538731}
     - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: levels.Array.size
-      value: 27
+      value: 29
       objectReference: {fileID: 0}
     - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: 'levels.Array.data[20]'
@@ -2907,6 +2907,14 @@ PrefabInstance:
       propertyPath: 'levels.Array.data[26]'
       value: 
       objectReference: {fileID: 11400000, guid: 32e6756a645ebbe409a44fa42a93205c, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[27]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 8294926f59fad0e4e810bbe80f4d8bac, type: 2}
+    - target: {fileID: 1573607369332994534, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
+      propertyPath: 'levels.Array.data[28]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 68a0face13f96ce4ca365667118b3c8b, type: 2}
     - target: {fileID: 7303356749682882291, guid: 6853a61b9b242154faafd00a787bcd93, type: 3}
       propertyPath: m_Name
       value: UI Manager
