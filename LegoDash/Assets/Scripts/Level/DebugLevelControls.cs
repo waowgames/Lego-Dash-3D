@@ -27,10 +27,7 @@ public class DebugLevelControls : MonoBehaviour
             if (service is MaxRewardedAdController maxRewarded)
             {
                 maxRewarded.SetUseMockAds(!enabled);
-                continue;
             }
-
-            service.enabled = enabled;
         }
 
         UpdateAdsLabel(enabled);
