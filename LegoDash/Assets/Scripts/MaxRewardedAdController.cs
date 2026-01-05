@@ -23,6 +23,7 @@ public class MaxRewardedAdController : MonoBehaviour, IAdService
     private Action _onRewardEarned;
     private Action _onAdClosed;
     private bool _useMockAds;
+    private bool _callbacksRegistered;
 
     [Header("Mock Ads (Editor)")]
     [SerializeField] private bool useMockAdsInEditor = true;
@@ -47,26 +48,46 @@ public class MaxRewardedAdController : MonoBehaviour, IAdService
             return;
         }
 
-        MaxSdkCallbacks.OnSdkInitializedEvent += OnSdkInitialized;
-        MaxSdkCallbacks.Rewarded.OnAdLoadedEvent += OnRewardedAdLoaded;
-        MaxSdkCallbacks.Rewarded.OnAdLoadFailedEvent += OnRewardedAdFailedToLoad;
-        MaxSdkCallbacks.Rewarded.OnAdDisplayFailedEvent += OnRewardedAdFailedToDisplay;
-        MaxSdkCallbacks.Rewarded.OnAdDisplayedEvent += OnRewardedAdDisplayed;
-        MaxSdkCallbacks.Rewarded.OnAdHiddenEvent += OnRewardedAdHidden;
-        MaxSdkCallbacks.Rewarded.OnAdReceivedRewardEvent += OnRewardedAdReceivedReward;
+        RegisterMaxCallbacks();
     }
 
     private void OnDestroy()
     {
-        if (Instance == this && !_useMockAds)
+        if (Instance == this && _callbacksRegistered)
         {
-            MaxSdkCallbacks.OnSdkInitializedEvent -= OnSdkInitialized;
-            MaxSdkCallbacks.Rewarded.OnAdLoadedEvent -= OnRewardedAdLoaded;
-            MaxSdkCallbacks.Rewarded.OnAdLoadFailedEvent -= OnRewardedAdFailedToLoad;
-            MaxSdkCallbacks.Rewarded.OnAdDisplayFailedEvent -= OnRewardedAdFailedToDisplay;
-            MaxSdkCallbacks.Rewarded.OnAdDisplayedEvent -= OnRewardedAdDisplayed;
-            MaxSdkCallbacks.Rewarded.OnAdHiddenEvent -= OnRewardedAdHidden;
-            MaxSdkCallbacks.Rewarded.OnAdReceivedRewardEvent -= OnRewardedAdReceivedReward;
+            UnregisterMaxCallbacks();
+        }
+    }
+
+    public void SetUseMockAds(bool useMockAds)
+    {
+        if (_useMockAds == useMockAds)
+        {
+            return;
+        }
+
+        _useMockAds = useMockAds;
+
+        if (_useMockAds)
+        {
+            if (_callbacksRegistered)
+            {
+                UnregisterMaxCallbacks();
+            }
+
+            EnsureMockAdService();
+            return;
+        }
+
+        if (!_callbacksRegistered)
+        {
+            RegisterMaxCallbacks();
+        }
+
+        if (MaxSdk.IsInitialized())
+        {
+            _isInitialized = true;
+            LoadRewardedAd();
         }
     }
 
@@ -253,6 +274,30 @@ public class MaxRewardedAdController : MonoBehaviour, IAdService
             return;
 
         MaxSdk.LoadRewardedAd(_adUnitId);
+    }
+
+    private void RegisterMaxCallbacks()
+    {
+        MaxSdkCallbacks.OnSdkInitializedEvent += OnSdkInitialized;
+        MaxSdkCallbacks.Rewarded.OnAdLoadedEvent += OnRewardedAdLoaded;
+        MaxSdkCallbacks.Rewarded.OnAdLoadFailedEvent += OnRewardedAdFailedToLoad;
+        MaxSdkCallbacks.Rewarded.OnAdDisplayFailedEvent += OnRewardedAdFailedToDisplay;
+        MaxSdkCallbacks.Rewarded.OnAdDisplayedEvent += OnRewardedAdDisplayed;
+        MaxSdkCallbacks.Rewarded.OnAdHiddenEvent += OnRewardedAdHidden;
+        MaxSdkCallbacks.Rewarded.OnAdReceivedRewardEvent += OnRewardedAdReceivedReward;
+        _callbacksRegistered = true;
+    }
+
+    private void UnregisterMaxCallbacks()
+    {
+        MaxSdkCallbacks.OnSdkInitializedEvent -= OnSdkInitialized;
+        MaxSdkCallbacks.Rewarded.OnAdLoadedEvent -= OnRewardedAdLoaded;
+        MaxSdkCallbacks.Rewarded.OnAdLoadFailedEvent -= OnRewardedAdFailedToLoad;
+        MaxSdkCallbacks.Rewarded.OnAdDisplayFailedEvent -= OnRewardedAdFailedToDisplay;
+        MaxSdkCallbacks.Rewarded.OnAdDisplayedEvent -= OnRewardedAdDisplayed;
+        MaxSdkCallbacks.Rewarded.OnAdHiddenEvent -= OnRewardedAdHidden;
+        MaxSdkCallbacks.Rewarded.OnAdReceivedRewardEvent -= OnRewardedAdReceivedReward;
+        _callbacksRegistered = false;
     }
 
     private string ResolveAdUnitId()
