@@ -24,6 +24,12 @@ public class DebugLevelControls : MonoBehaviour
     {
         foreach (var service in FindAdServices())
         {
+            if (service is MaxRewardedAdController maxRewarded)
+            {
+                maxRewarded.SetUseMockAds(!enabled);
+                continue;
+            }
+
             service.enabled = enabled;
         }
 
