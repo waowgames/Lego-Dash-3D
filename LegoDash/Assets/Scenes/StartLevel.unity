@@ -384,6 +384,54 @@ Transform:
   - {fileID: 2002745086}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &174758781
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 174758783}
+  - component: {fileID: 174758782}
+  m_Layer: 0
+  m_Name: MAX AD
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &174758782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 174758781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f36169e2661aeb44a688a1dcf469ddf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaxRewardedAdController
+  rewardedAdUnitIdAndroid: cf8a3ae84fca9771
+  rewardedAdUnitIdiOS: REPLACE_WITH_IOS_AD_UNIT_ID
+  useMockAdsInEditor: 0
+  mockAdService: {fileID: 1954648048}
+--- !u!4 &174758783
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 174758781}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.23722, y: -0.27, z: -4.22087}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &253866663
 GameObject:
   m_ObjectHideFlags: 0
@@ -3796,3 +3844,4 @@ SceneRoots:
   - {fileID: 552867783}
   - {fileID: 1954648050}
   - {fileID: 65637531}
+  - {fileID: 174758783}
