@@ -2627,10 +2627,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce613d1619524619a8053873ce4597c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panelAnchorOffset: {x: 20, y: -20}
-  panelSize: {x: 260, y: 200}
-  buttonHeight: 48
-  toggleHeight: 48
 --- !u!1 &7431725591076642704
 GameObject:
   m_ObjectHideFlags: 0
