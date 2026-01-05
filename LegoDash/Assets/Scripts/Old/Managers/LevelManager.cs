@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using DG.Tweening;
+using GameAnalyticsSDK;
 using Sirenix.OdinInspector; // << EKLENDİ: Action için
 
 public class LevelManager : MonoBehaviour
@@ -39,21 +40,21 @@ public class LevelManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         
-        // GameAnalytics.Initialize();
-        //
-        //
-        // BaseTenjin instance = Tenjin.getInstance("GSPTCKSIBO7QSXNH4YQNYVWVWZ4BRK2D");
-        //
-        // instance.Connect();
-        // instance.SubscribeAppLovinImpressions();
-        //
-        // instance.SetAppStoreType(AppStoreType.googleplay);
-        //
-        // MaxSdkCallbacks.OnSdkInitializedEvent += (MaxSdk.SdkConfiguration sdkConfiguration) => {
-        //     // AppLovin SDK is initialized, start loading ads
-        // };
-        //
-        // MaxSdk.InitializeSdk();
+        GameAnalytics.Initialize();
+        
+        
+        BaseTenjin instance = Tenjin.getInstance("GSPTCKSIBO7QSXNH4YQNYVWVWZ4BRK2D");
+        
+        instance.Connect();
+        instance.SubscribeAppLovinImpressions();
+        
+        instance.SetAppStoreType(AppStoreType.googleplay);
+        
+        MaxSdkCallbacks.OnSdkInitializedEvent += (MaxSdk.SdkConfiguration sdkConfiguration) => {
+            // AppLovin SDK is initialized, start loading ads
+        };
+        
+        MaxSdk.InitializeSdk();
         //
     }
 

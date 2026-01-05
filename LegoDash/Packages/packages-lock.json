@@ -1,5 +1,35 @@
 {
   "dependencies": {
+    "com.applovin.mediation.adapters.google.android": {
+      "version": "24090000.0.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://unity.packages.applovin.com"
+    },
+    "com.applovin.mediation.adapters.google.ios": {
+      "version": "12140000.0.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://unity.packages.applovin.com"
+    },
+    "com.applovin.mediation.ads": {
+      "version": "8.5.1",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.google.external-dependency-manager": "1.2.182"
+      },
+      "url": "https://unity.packages.applovin.com"
+    },
+    "com.google.external-dependency-manager": {
+      "version": "1.2.182",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://package.openupm.com"
+    },
     "com.unity.bindings.openimageio": {
       "version": "1.0.0",
       "depth": 1,
