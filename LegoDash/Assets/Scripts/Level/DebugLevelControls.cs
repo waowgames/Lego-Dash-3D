@@ -1,14 +1,33 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class DebugLevelControls : MonoBehaviour
 {
+    [Header("UI References")]
+    [SerializeField] private TMP_Text adsToggleLabel;
+    [SerializeField] private string adsOnLabel = "On";
+    [SerializeField] private string adsOffLabel = "Off";
+
+    [Header("Level References")]
+    [SerializeField] private LevelMissionManager levelMissionManager;
+
+    private void Awake()
+    {
+        if (adsToggleLabel == null)
+        {
+            adsToggleLabel = GetComponentInChildren<TMP_Text>();
+        }
+    }
+
     public void ToggleAds(bool enabled)
     {
         foreach (var service in FindAdServices())
         {
             service.enabled = enabled;
         }
+
+        UpdateAdsLabel(enabled);
     }
 
     private List<MonoBehaviour> FindAdServices()
@@ -28,9 +47,10 @@ public class DebugLevelControls : MonoBehaviour
 
     public void GoToNextLevel()
     {
-        if (LevelMissionManager.Instance != null)
+        var manager = levelMissionManager != null ? levelMissionManager : LevelMissionManager.Instance;
+        if (manager != null)
         {
-            LevelMissionManager.Instance.AdvanceToNextLevel();
+            manager.AdvanceToNextLevel();
             return;
         }
 
@@ -39,9 +59,20 @@ public class DebugLevelControls : MonoBehaviour
 
     public void GoToPreviousLevel()
     {
-        if (LevelMissionManager.Instance != null)
+        var manager = levelMissionManager != null ? levelMissionManager : LevelMissionManager.Instance;
+        if (manager != null)
         {
-            LevelMissionManager.Instance.ReturnToPreviousLevel();
+            manager.ReturnToPreviousLevel();
         }
+    }
+
+    private void UpdateAdsLabel(bool adsEnabled)
+    {
+        if (adsToggleLabel == null)
+        {
+            return;
+        }
+
+        adsToggleLabel.text = adsEnabled ? adsOnLabel : adsOffLabel;
     }
 }
