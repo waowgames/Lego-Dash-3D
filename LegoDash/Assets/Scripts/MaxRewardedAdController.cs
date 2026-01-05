@@ -6,7 +6,7 @@ using UnityEngine;
 /// Handles AppLovin MAX rewarded ad loading/showing.
 /// Attach to a persistent GameObject in the first scene.
 /// </summary>
-public class MaxRewardedAdController : MonoBehaviour
+public class MaxRewardedAdController : MonoBehaviour, IAdService
 {
     public static MaxRewardedAdController Instance { get; private set; }
 
@@ -22,6 +22,11 @@ public class MaxRewardedAdController : MonoBehaviour
     private bool _rewardEarned;
     private Action _onRewardEarned;
     private Action _onAdClosed;
+    private bool _useMockAds;
+
+    [Header("Mock Ads (Editor)")]
+    [SerializeField] private bool useMockAdsInEditor = true;
+    [SerializeField] private MockAdService mockAdService;
 
     private void Awake()
     {
@@ -34,6 +39,13 @@ public class MaxRewardedAdController : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         _adUnitId = ResolveAdUnitId();
+        _useMockAds = ShouldUseMockAds();
+
+        if (_useMockAds)
+        {
+            EnsureMockAdService();
+            return;
+        }
 
         MaxSdkCallbacks.OnSdkInitializedEvent += OnSdkInitialized;
         MaxSdkCallbacks.Rewarded.OnAdLoadedEvent += OnRewardedAdLoaded;
@@ -46,7 +58,7 @@ public class MaxRewardedAdController : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (Instance == this)
+        if (Instance == this && !_useMockAds)
         {
             MaxSdkCallbacks.OnSdkInitializedEvent -= OnSdkInitialized;
             MaxSdkCallbacks.Rewarded.OnAdLoadedEvent -= OnRewardedAdLoaded;
@@ -60,10 +72,30 @@ public class MaxRewardedAdController : MonoBehaviour
 
     public bool IsRewardedAdReady()
     {
+        if (_useMockAds)
+        {
+            return mockAdService != null && mockAdService.IsAdReady(GetMockPlacement());
+        }
+
         return !string.IsNullOrEmpty(_adUnitId) && MaxSdk.IsRewardedAdReady(_adUnitId);
+    }
+
+    public bool IsAdReady(string placement)
+    {
+        if (_useMockAds)
+        {
+            return mockAdService != null && mockAdService.IsAdReady(placement);
+        }
+
+        return IsRewardedAdReady();
     }
     private void Start()
     {
+        if (_useMockAds)
+        {
+            return;
+        }
+
         // SDK might already be initialized by the time this component starts.
         if (MaxSdk.IsInitialized())
         {
@@ -128,6 +160,30 @@ public class MaxRewardedAdController : MonoBehaviour
     /// </summary>
     public bool TryShowRewardedAd(Action onRewardEarned, Action onAdClosed = null)
     {
+        if (_useMockAds)
+        {
+            if (mockAdService == null)
+            {
+                Debug.LogWarning("MAX Rewarded: Mock ad service missing.");
+                return false;
+            }
+
+            _rewardEarned = false;
+            _onRewardEarned = onRewardEarned;
+            _onAdClosed = onAdClosed;
+
+            mockAdService.ShowRewarded(
+                GetMockPlacement(),
+                () =>
+                {
+                    _rewardEarned = true;
+                    HandleAdFinished(true);
+                },
+                () => HandleAdFinished(false));
+
+            return true;
+        }
+
         if (string.IsNullOrEmpty(_adUnitId) || !MaxSdk.IsRewardedAdReady(_adUnitId))
         {
             return false;
@@ -138,6 +194,28 @@ public class MaxRewardedAdController : MonoBehaviour
         _onAdClosed = onAdClosed;
         MaxSdk.ShowRewardedAd(_adUnitId);
         return true;
+    }
+
+    public void ShowRewarded(string placement, Action onSuccess, Action onFail)
+    {
+        if (_useMockAds)
+        {
+            if (mockAdService == null)
+            {
+                Debug.LogWarning("MAX Rewarded: Mock ad service missing.");
+                onFail?.Invoke();
+                return;
+            }
+
+            mockAdService.ShowRewarded(placement, onSuccess, onFail);
+            return;
+        }
+
+        bool started = TryShowRewardedAd(onSuccess, onFail);
+        if (!started)
+        {
+            onFail?.Invoke();
+        }
     }
     
 
@@ -171,7 +249,7 @@ public class MaxRewardedAdController : MonoBehaviour
 
     private void LoadRewardedAd()
     {
-        if (!_isInitialized || string.IsNullOrEmpty(_adUnitId))
+        if (_useMockAds || !_isInitialized || string.IsNullOrEmpty(_adUnitId))
             return;
 
         MaxSdk.LoadRewardedAd(_adUnitId);
@@ -191,5 +269,32 @@ public class MaxRewardedAdController : MonoBehaviour
     private bool IsRelevantAdUnit(string adUnitId)
     {
         return !string.IsNullOrEmpty(_adUnitId) && string.Equals(_adUnitId, adUnitId, StringComparison.Ordinal);
+    }
+
+    private bool ShouldUseMockAds()
+    {
+#if UNITY_EDITOR
+        return useMockAdsInEditor;
+#else
+        return false;
+#endif
+    }
+
+    private void EnsureMockAdService()
+    {
+        if (mockAdService == null)
+        {
+            mockAdService = GetComponent<MockAdService>();
+        }
+
+        if (mockAdService == null)
+        {
+            Debug.LogWarning("MAX Rewarded: Mock ad service not found on GameObject.");
+        }
+    }
+
+    private string GetMockPlacement()
+    {
+        return "max_rewarded";
     }
 }
