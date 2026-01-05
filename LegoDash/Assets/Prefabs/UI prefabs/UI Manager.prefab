@@ -2426,6 +2426,7 @@ GameObject:
   - component: {fileID: 1573607369332994534}
   - component: {fileID: 730102778199589528}
   - component: {fileID: 8552283131531707407}
+  - component: {fileID: 9123456789012345678}
   m_Layer: 0
   m_Name: UI Manager
   m_TagString: Untagged
@@ -2614,6 +2615,22 @@ MonoBehaviour:
   celebrationPieceDelay: 0.05
   celebrationPunchStrength: 0.08
   celebrationDuration: 0.15
+--- !u!114 &9123456789012345678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7303356749682882291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce613d1619524619a8053873ce4597c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelAnchorOffset: {x: 20, y: -20}
+  panelSize: {x: 260, y: 200}
+  buttonHeight: 48
+  toggleHeight: 48
 --- !u!1 &7431725591076642704
 GameObject:
   m_ObjectHideFlags: 0
